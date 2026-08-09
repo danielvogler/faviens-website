@@ -1,0 +1,61 @@
+---
+import { t, type Locale } from '~/i18n';
+
+interface FooterLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  lang: Locale;
+  // Empty until the imprint / privacy pages exist.
+  legalLinks?: FooterLink[];
+  contactEmail: string;
+}
+
+const { lang, legalLinks = [], contactEmail } = Astro.props;
+const strings = t(lang);
+
+const FOUNDED = 2026;
+const currentYear = new Date().getFullYear();
+const yearRange = currentYear > FOUNDED ? `${FOUNDED}–${currentYear}` : `${FOUNDED}`;
+---
+
+<footer class="border-t border-rule mt-32">
+  <div
+    class="mx-auto max-w-(--container-content) px-6 md:px-10 py-12 grid gap-10 md:grid-cols-3 text-sm text-muted"
+  >
+    <div class="space-y-2">
+      <p class="font-medium text-ink tracking-tight">FAVIENS<span class="text-accent">.</span></p>
+      <p>{lang === 'de' ? 'Zürich, Schweiz' : 'Zurich, Switzerland'}</p>
+    </div>
+
+    <div class="space-y-2">
+      <p class="font-medium text-ink tracking-tight">{strings.footer.contact}</p>
+      <p><a href={`mailto:${contactEmail}`} class="link-underline">{contactEmail}</a></p>
+    </div>
+
+    {
+      legalLinks.length > 0 && (
+        <div class="space-y-2">
+          <p class="font-medium text-ink tracking-tight">
+            {lang === 'de' ? 'Rechtliches' : 'Legal'}
+          </p>
+          <ul class="space-y-1">
+            {legalLinks.map((l) => (
+              <li>
+                <a href={l.href} class="link-underline">
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+
+  <div class="mx-auto max-w-(--container-content) px-6 md:px-10 pb-8 text-xs text-muted">
+    © {yearRange} FAVIENS. {strings.footer.rights}
+  </div>
+</footer>

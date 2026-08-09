@@ -1,0 +1,43 @@
+---
+import type { Locale } from '~/i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+const SITE = import.meta.env.SITE_URL ?? 'https://faviens.com';
+const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
+
+// Kept deliberately minimal while the site is a placeholder. Add address,
+// taxID, and sameAs profiles once the full site ships.
+const organization = {
+  '@type': 'ProfessionalService',
+  '@id': `${SITE}/#organization`,
+  name: 'FAVIENS',
+  url: SITE,
+  logo: `${SITE}/og.png`,
+  description:
+    lang === 'de'
+      ? 'Schweizer Beratung für KI, agentische KI, Analytics und Daten.'
+      : 'Swiss consulting for AI, agentic AI, analytics, and data.',
+  areaServed: [
+    { '@type': 'Country', name: 'Switzerland' },
+    { '@type': 'Country', name: 'Germany' },
+    { '@type': 'Country', name: 'Austria' },
+  ],
+  knowsAbout: [
+    'Artificial Intelligence',
+    'Agentic AI',
+    'Data Analytics',
+    'Data Engineering',
+    'Cloud Consulting',
+  ],
+  email: CONTACT_EMAIL,
+};
+
+const payload = { '@context': 'https://schema.org', '@graph': [organization] };
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(payload)} is:inline />

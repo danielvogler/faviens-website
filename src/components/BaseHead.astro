@@ -1,0 +1,56 @@
+---
+import '~/styles/global.css';
+import { otherLocalePath, type Locale } from '~/i18n';
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: Locale;
+}
+
+const {
+  title,
+  description = 'Swiss consulting for AI, agentic AI, analytics, and data. FAVIENS.',
+  lang = 'de',
+} = Astro.props;
+
+const SITE = import.meta.env.SITE_URL ?? 'https://faviens.com';
+const canonical = new URL(Astro.url.pathname, SITE).toString();
+const altLocale: Locale = lang === 'de' ? 'en' : 'de';
+const altPath = otherLocalePath(Astro.url.pathname, lang);
+const dePath = lang === 'de' ? Astro.url.pathname : altPath;
+const enPath = lang === 'en' ? Astro.url.pathname : altPath;
+const deUrl = new URL(dePath, SITE).toString();
+const enUrl = new URL(enPath, SITE).toString();
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+<meta name="theme-color" content="#fbfbfd" />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<link rel="alternate" hreflang="de-CH" href={deUrl} />
+<link rel="alternate" hreflang="en" href={enUrl} />
+<link rel="alternate" hreflang="x-default" href={deUrl} />
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={new URL('/og.png', SITE).toString()} />
+<meta property="og:locale" content={lang === 'de' ? 'de_CH' : 'en_US'} />
+<meta property="og:locale:alternate" content={altLocale === 'de' ? 'de_CH' : 'en_US'} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={new URL('/og.png', SITE).toString()} />

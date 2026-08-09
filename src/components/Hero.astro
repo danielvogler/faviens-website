@@ -1,0 +1,20 @@
+---
+interface Props {
+  eyebrow: string;
+  slogan: string;
+}
+
+const { eyebrow, slogan } = Astro.props;
+---
+
+<section class="min-h-screen flex items-center px-6 md:px-10">
+  <div class="mx-auto max-w-(--container-content) w-full">
+    <p class="text-sm tracking-wider uppercase text-accent mb-8">{eyebrow}</p>
+    <h1 class="text-5xl md:text-7xl lg:text-8xl tracking-tighter font-medium leading-[0.95]">
+      FAVIENS<span class="text-accent">.</span>
+    </h1>
+    <p class="mt-10 max-w-3xl text-xl md:text-2xl text-ink/85 tracking-tight leading-snug">
+      {slogan}
+    </p>
+  </div>
+</section>

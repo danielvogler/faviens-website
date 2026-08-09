@@ -1,0 +1,21 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Hero from '~/components/Hero.astro';
+import ContactCTA from '~/components/ContactCTA.astro';
+import { t } from '~/i18n';
+
+const lang = 'de' as const;
+const strings = t(lang);
+
+const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
+---
+
+<BaseLayout
+  title={strings.pages.home.title}
+  description={strings.pages.home.description}
+  lang={lang}
+>
+  <Hero eyebrow={strings.hero.eyebrow} slogan={strings.hero.slogan} />
+
+  <ContactCTA lang={lang} contactHref={`mailto:${CONTACT_EMAIL}`} />
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+interface Props {
+  bordered?: boolean;
+  class?: string;
+}
+
+const { bordered = false, class: className = '' } = Astro.props;
+const borderClass = bordered ? 'border-t border-rule' : '';
+---
+
+<section class:list={['px-6 md:px-10 py-24 md:py-32', borderClass, className]}>
+  <div class="mx-auto max-w-(--container-content)">
+    <slot />
+  </div>
+</section>

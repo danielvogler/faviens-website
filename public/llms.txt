@@ -1,0 +1,13 @@
+# FAVIENS
+
+> Swiss consulting for AI, agentic AI, analytics, and data. The full site is in
+> preparation; this domain currently serves a placeholder page.
+
+## Languages
+
+- [Deutsch](https://faviens.com/)
+- [English](https://faviens.com/en)
+
+## Contact
+
+- hello@faviens.com

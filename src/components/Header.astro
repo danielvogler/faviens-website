@@ -1,0 +1,84 @@
+---
+import { getHomeHref, type Locale } from '~/i18n';
+
+interface NavLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  lang: Locale;
+  // Empty while the site is a placeholder. Populate from i18n/getNavLinks()
+  // once the real pages exist — the markup below already handles it.
+  navLinks?: NavLink[];
+  contactLabel: string;
+  contactHref: string;
+}
+
+const { lang, navLinks = [], contactLabel, contactHref } = Astro.props;
+const homeHref = getHomeHref(lang);
+---
+
+<header
+  data-site-header
+  class="fixed top-0 inset-x-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-300"
+>
+  <div
+    class="mx-auto max-w-(--container-content) px-6 md:px-10 py-5 flex items-center justify-between"
+  >
+    <a
+      href={homeHref}
+      class="font-medium tracking-tight text-base md:text-lg whitespace-nowrap hover:text-accent transition-colors"
+      aria-label="FAVIENS, home"
+    >
+      FAVIENS<span class="text-accent">.</span>
+    </a>
+
+    {
+      navLinks.length > 0 && (
+        <nav class="hidden md:flex items-center gap-8" aria-label="Primary">
+          {navLinks.map((link) => (
+            <a href={link.href} class="text-sm text-ink/80 hover:text-ink link-underline">
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    <div class="flex items-center gap-4">
+      <slot name="language-switcher" />
+      <a
+        href={contactHref}
+        class="hidden sm:inline-flex items-center text-sm font-medium px-4 py-2 border border-ink/20 hover:bg-ink hover:text-paper hover:border-ink transition-colors"
+      >
+        {contactLabel}
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  header[data-site-header] {
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+  }
+  header[data-site-header][data-scrolled='true'] {
+    background-color: color-mix(in oklab, var(--color-paper) 80%, transparent);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom-color: var(--color-rule);
+  }
+</style>
+
+<script>
+  const header = document.querySelector('[data-site-header]');
+  if (header) {
+    const update = () => {
+      const scrolled = window.scrollY > window.innerHeight * 0.6;
+      header.setAttribute('data-scrolled', String(scrolled));
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+  }
+</script>
