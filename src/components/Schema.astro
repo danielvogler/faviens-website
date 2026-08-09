@@ -15,25 +15,25 @@ const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
 const organization = {
   '@type': 'ProfessionalService',
   '@id': `${SITE}/#organization`,
-  name: 'FAVIENS',
+  name: 'Faviens',
   url: SITE,
   logo: `${SITE}/og.png`,
   description:
     lang === 'de'
-      ? 'Schweizer Beratung für KI, agentische KI, Analytics und Daten.'
-      : 'Swiss consulting for AI, agentic AI, analytics, and data.',
+      ? 'Beratung für agentische KI mit Sitz in Zürich, Schweiz.'
+      : 'Agentic-AI consulting based in Zürich, Switzerland.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Zürich',
+    addressCountry: 'CH',
+  },
+  // DACH primary, Romandie secondary, English-speaking international.
   areaServed: [
     { '@type': 'Country', name: 'Switzerland' },
     { '@type': 'Country', name: 'Germany' },
     { '@type': 'Country', name: 'Austria' },
   ],
-  knowsAbout: [
-    'Artificial Intelligence',
-    'Agentic AI',
-    'Data Analytics',
-    'Data Engineering',
-    'Cloud Consulting',
-  ],
+  knowsAbout: ['Agentic AI', 'Artificial Intelligence', 'AI Strategy', 'AI Consulting'],
   email: CONTACT_EMAIL,
 };
 

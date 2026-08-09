@@ -1,20 +1,37 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/inter/wght.css';
-@import '@fontsource-variable/inter/wght-italic.css';
+@import '@fontsource-variable/archivo/wght.css';
 
+/*
+ * Faviens design tokens — from the design handoff (2026-08-08), section 4.
+ * Token names match the handoff one-to-one, except the handoff's `--black`,
+ * which is `--color-ink` here so it does not clobber Tailwind's built-in black.
+ */
 @theme {
-  --color-paper: oklch(0.978 0.006 240);
-  --color-ink: oklch(0.16 0 0);
-  --color-muted: oklch(0.5 0 0);
-  --color-rule: oklch(0.87 0.015 240);
-  --color-accent: oklch(0.55 0.13 235);
-  --color-accent-soft: oklch(0.95 0.03 235);
-  --color-accent-faint: oklch(0.96 0.015 235);
+  /* ground */
+  --color-paper: #fdfdfb; /* page background — warm white, never pure #fff */
+  --color-ink: #0e0e10; /* handoff --black: text, tiles; used sparingly */
+  --color-grey: #71716e; /* secondary text only */
+  --color-hair: #e4e3de; /* 1px rules, card borders, grid lines */
 
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  /* gold */
+  --color-gold: #a6813a; /* primary — wordmark, marks, accents */
+  --color-gold-d: #8a6b22; /* small type and anything under 18px */
+  --color-gold-l: #d9b96e; /* highlights, reversed settings */
+
+  /* tonal ramp (caps wordmark + rule gradients) */
+  --color-t1: #d3bf90; /* faintest */
+  --color-t2: #c3a768;
+  --color-t3: #b4934b;
+  --color-t4: #a6813a; /* strongest */
+
+  /* Archivo is the single family. Hierarchy comes from size, weight and
+     colour only — never introduce a second typeface (handoff §5, §11). */
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
 
   --container-content: 72rem;
+
+  /* Body measure. Copy is left-aligned and never full-bleed (handoff §6). */
+  --container-measure: 58ch;
 }
 
 html {
@@ -24,13 +41,12 @@ html {
 }
 
 body {
-  font-feature-settings: 'ss01', 'cv11';
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: var(--color-accent);
+  background: var(--color-gold);
   color: var(--color-paper);
 }
 
@@ -39,17 +55,30 @@ a {
   text-decoration: none;
 }
 
+/*
+ * Descriptor lockup and eyebrow labels — handoff §5.
+ * Never gold: these sit far below 18px, where gold fails contrast.
+ */
+@utility lockup {
+  font-weight: 500;
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+@utility eyebrow {
+  font-weight: 600;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
 @utility link-underline {
-  position: relative;
-  background-image: linear-gradient(var(--color-accent), var(--color-accent));
+  background-image: linear-gradient(var(--color-gold), var(--color-gold));
   background-position: 0% 100%;
   background-repeat: no-repeat;
   background-size: 0% 1px;
   transition: background-size 200ms ease-out;
-}
-
-@utility link-underline-active {
-  background-size: 100% 1px;
 }
 
 @media (hover: hover) {

@@ -11,15 +11,12 @@ const otherLocale: Locale = lang === 'de' ? 'en' : 'de';
 const otherHref = otherLocalePath(Astro.url.pathname, lang);
 ---
 
-<div
-  class="flex items-center gap-1 text-xs font-medium"
-  aria-label={strings.languageSwitcher.label}
->
+<div class="eyebrow flex items-center gap-1.5" aria-label={strings.languageSwitcher.label}>
   <span class="text-ink" aria-current="true">
     {strings.languageSwitcher[lang]}
   </span>
-  <span class="text-muted">/</span>
-  <a href={otherHref} class="text-muted hover:text-ink transition-colors">
+  <span class="text-hair" aria-hidden="true">/</span>
+  <a href={otherHref} class="text-grey hover:text-ink transition-colors">
     {strings.languageSwitcher[otherLocale]}
   </a>
 </div>

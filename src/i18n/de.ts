@@ -1,23 +1,31 @@
 export interface Strings {
-  nav: {
-    contact: string;
-  };
   footer: {
     contact: string;
+    legal: string;
+    location: string;
+    pronunciationLabel: string;
+    pronunciation: string;
+    pronunciationIpa: string;
     rights: string;
   };
   hero: {
+    descriptor: string;
+    status: string;
+    lead: string;
+  };
+  name: {
+    number: string;
+    heading: string;
+    /** Approved brand answer (handoff §1). "blends" and "derived from" are
+     *  accurate; never write that the name "means" anything. */
+    body: string;
+  };
+  cta: {
     eyebrow: string;
-    slogan: string;
   };
   pages: {
     home: { title: string; description: string };
     notFound: { title: string; heading: string; lead: string; back: string };
-  };
-  cta: {
-    eyebrow: string;
-    headline: string;
-    label: string;
   };
   languageSwitcher: {
     de: string;
@@ -30,34 +38,40 @@ export interface Strings {
 }
 
 export const de: Strings = {
-  nav: {
-    contact: 'Kontakt',
-  },
   footer: {
     contact: 'Kontakt',
+    legal: 'Rechtliches',
+    location: 'Zürich, Schweiz',
+    pronunciationLabel: 'Aussprache',
+    pronunciation: 'FAH-vee-ens',
+    pronunciationIpa: '/ˈfɑːviˌɛns/',
     rights: 'Alle Rechte vorbehalten.',
   },
   hero: {
-    eyebrow: 'Demnächst',
-    slogan: 'KI, agentische KI, Analytics & Daten. Schweizer Beratung.',
+    descriptor: 'Agentic-AI-Beratung — Zürich',
+    status: 'Demnächst',
+    lead: 'Faviens ist eine Beratung für agentische KI mit Sitz in Zürich. Der vollständige Auftritt folgt in Kürze.',
+  },
+  name: {
+    number: '01',
+    heading: 'Der Name',
+    body: 'Der Name verbindet zwei lateinische Wörter: favere, zugunsten von jemandem handeln, und agens, der Handelnde.',
+  },
+  cta: {
+    eyebrow: 'Kontakt',
   },
   pages: {
     home: {
-      title: 'FAVIENS',
+      title: 'Faviens',
       description:
-        'Schweizer Beratung für KI, agentische KI, Analytics und Daten. Website in Kürze verfügbar.',
+        'Faviens — Beratung für agentische KI in Zürich. Der vollständige Auftritt folgt in Kürze.',
     },
     notFound: {
-      title: '404, FAVIENS',
+      title: '404 — Faviens',
       heading: '404',
       lead: 'Diese Seite existiert nicht.',
       back: 'Zur Startseite',
     },
-  },
-  cta: {
-    eyebrow: 'Bereit zu starten?',
-    headline: 'Sprechen wir über Ihr Projekt.',
-    label: 'Kontakt aufnehmen →',
   },
   languageSwitcher: {
     de: 'DE',

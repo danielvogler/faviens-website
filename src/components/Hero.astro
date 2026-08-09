@@ -1,20 +1,35 @@
 ---
+import Wordmark from '~/components/Wordmark.astro';
+
 interface Props {
-  eyebrow: string;
-  slogan: string;
+  descriptor: string;
+  status: string;
+  lead: string;
 }
 
-const { eyebrow, slogan } = Astro.props;
+const { descriptor, status, lead } = Astro.props;
 ---
 
-<section class="min-h-screen flex items-center px-6 md:px-10">
+<!--
+  The gold tittle is the single gold event on this screen (handoff §6).
+  Everything else is ink, grey and hairline. No gradient background — the
+  identity's strength is the emptiness around the mark.
+-->
+<section class="min-h-screen flex flex-col justify-center px-6 md:px-10 pt-32 pb-20">
   <div class="mx-auto max-w-(--container-content) w-full">
-    <p class="text-sm tracking-wider uppercase text-accent mb-8">{eyebrow}</p>
-    <h1 class="text-5xl md:text-7xl lg:text-8xl tracking-tighter font-medium leading-[0.95]">
-      FAVIENS<span class="text-accent">.</span>
+    <p class="lockup text-grey">{descriptor}</p>
+
+    <h1 class="mt-10">
+      <Wordmark class="text-[clamp(3.5rem,14vw,11rem)]" />
     </h1>
-    <p class="mt-10 max-w-3xl text-xl md:text-2xl text-ink/85 tracking-tight leading-snug">
-      {slogan}
-    </p>
+
+    <!-- The 2.5rem left column is for section numbers only; a word set in it
+         overruns into the copy. The status label stacks above the lead. -->
+    <div class="mt-16">
+      <p class="eyebrow text-grey">{status}</p>
+      <p class="mt-5 max-w-(--container-measure) text-lg md:text-xl text-ink/85 leading-relaxed">
+        {lead}
+      </p>
+    </div>
   </div>
 </section>

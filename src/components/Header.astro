@@ -1,4 +1,5 @@
 ---
+import Wordmark from '~/components/Wordmark.astro';
 import { getHomeHref, type Locale } from '~/i18n';
 
 interface NavLink {
@@ -8,30 +9,29 @@ interface NavLink {
 
 interface Props {
   lang: Locale;
-  // Empty while the site is a placeholder. Populate from i18n/getNavLinks()
-  // once the real pages exist — the markup below already handles it.
+  // Empty while the site is a placeholder. Populate once real pages exist —
+  // the markup below already handles it.
   navLinks?: NavLink[];
-  contactLabel: string;
-  contactHref: string;
 }
 
-const { lang, navLinks = [], contactLabel, contactHref } = Astro.props;
+const { lang, navLinks = [] } = Astro.props;
 const homeHref = getHomeHref(lang);
 ---
 
+<!--
+  The header mark carries no gold: the hero's tittle is the screen's one gold
+  event, and at this size the dot would sit below the 72px reproduction floor
+  anyway (handoff §4). Hairline, not shadow, separates it once scrolled.
+-->
 <header
   data-site-header
   class="fixed top-0 inset-x-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-300"
 >
   <div
-    class="mx-auto max-w-(--container-content) px-6 md:px-10 py-5 flex items-center justify-between"
+    class="mx-auto max-w-(--container-content) px-6 md:px-10 py-6 flex items-center justify-between"
   >
-    <a
-      href={homeHref}
-      class="font-medium tracking-tight text-base md:text-lg whitespace-nowrap hover:text-accent transition-colors"
-      aria-label="FAVIENS, home"
-    >
-      FAVIENS<span class="text-accent">.</span>
+    <a href={homeHref} class="hover:text-gold-d transition-colors" aria-label="faviens, home">
+      <Wordmark class="text-xl" mono />
     </a>
 
     {
@@ -46,15 +46,7 @@ const homeHref = getHomeHref(lang);
       )
     }
 
-    <div class="flex items-center gap-4">
-      <slot name="language-switcher" />
-      <a
-        href={contactHref}
-        class="hidden sm:inline-flex items-center text-sm font-medium px-4 py-2 border border-ink/20 hover:bg-ink hover:text-paper hover:border-ink transition-colors"
-      >
-        {contactLabel}
-      </a>
-    </div>
+    <slot name="language-switcher" />
   </div>
 </header>
 
@@ -64,10 +56,10 @@ const homeHref = getHomeHref(lang);
     border-bottom: 1px solid transparent;
   }
   header[data-site-header][data-scrolled='true'] {
-    background-color: color-mix(in oklab, var(--color-paper) 80%, transparent);
-    backdrop-filter: saturate(180%) blur(12px);
-    -webkit-backdrop-filter: saturate(180%) blur(12px);
-    border-bottom-color: var(--color-rule);
+    background-color: color-mix(in oklab, var(--color-paper) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom-color: var(--color-hair);
   }
 </style>
 
@@ -75,8 +67,7 @@ const homeHref = getHomeHref(lang);
   const header = document.querySelector('[data-site-header]');
   if (header) {
     const update = () => {
-      const scrolled = window.scrollY > window.innerHeight * 0.6;
-      header.setAttribute('data-scrolled', String(scrolled));
+      header.setAttribute('data-scrolled', String(window.scrollY > 40));
     };
     update();
     window.addEventListener('scroll', update, { passive: true });

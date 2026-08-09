@@ -1,33 +1,40 @@
 import type { Strings } from './de';
 
 export const en: Strings = {
-  nav: {
-    contact: 'Contact',
-  },
   footer: {
     contact: 'Contact',
+    legal: 'Legal',
+    location: 'Zürich, Switzerland',
+    pronunciationLabel: 'Pronunciation',
+    pronunciation: 'FAY-vee-enz',
+    pronunciationIpa: '/ˈfeɪviənz/',
     rights: 'All rights reserved.',
   },
   hero: {
-    eyebrow: 'Coming soon',
-    slogan: 'AI, agentic AI, analytics & data. Swiss consulting.',
+    descriptor: 'Agentic-AI consulting — Zürich',
+    status: 'Coming soon',
+    lead: 'Faviens is an agentic-AI consultancy based in Zürich. The full site follows shortly.',
+  },
+  name: {
+    number: '01',
+    heading: 'The name',
+    body: 'The name blends two Latin words: favere, to act in someone’s favour, and agens, agent.',
+  },
+  cta: {
+    eyebrow: 'Contact',
   },
   pages: {
     home: {
-      title: 'FAVIENS',
-      description: 'Swiss consulting for AI, agentic AI, analytics, and data. Site coming soon.',
+      title: 'Faviens',
+      description:
+        'Faviens — agentic-AI consulting in Zürich, Switzerland. The full site follows shortly.',
     },
     notFound: {
-      title: '404, FAVIENS',
+      title: '404 — Faviens',
       heading: '404',
       lead: 'This page does not exist.',
       back: 'Back to home',
     },
-  },
-  cta: {
-    eyebrow: 'Ready to start?',
-    headline: 'Let’s talk about your project.',
-    label: 'Get in touch →',
   },
   languageSwitcher: {
     de: 'DE',

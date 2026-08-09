@@ -1,6 +1,6 @@
-# FAVIENS
+# Faviens
 
-> Swiss consulting for AI, agentic AI, analytics, and data.
+> Agentic-AI consulting in Zürich, Switzerland.
 > Live at **[faviens.com](https://faviens.com)**.
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/danielvogler/faviens-website/deploy.yml?branch=main&label=deploy&logo=github)](https://github.com/danielvogler/faviens-website/actions)
@@ -10,6 +10,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
 Static, bilingual (DE / EN) placeholder site. Zero JavaScript framework, self-hosted fonts, no third-party tracking. Built with Astro and Tailwind v4, deployed via GitHub Actions to GitHub Pages, served from a custom domain. Currently a single coming-soon page; the component and i18n scaffolding is in place to grow into the full site.
+
+Implements the Faviens design handoff of 2026-08-08 — see [Design system](#design-system) for which parts are settled and which are still provisional.
 
 ## Build pipeline
 
@@ -25,27 +27,30 @@ flowchart LR
 
 ## Stack
 
-| Layer           | Choice                                                            |
-| --------------- | ----------------------------------------------------------------- |
-| Framework       | [Astro 6](https://astro.build) (static output)                    |
-| Styling         | [Tailwind CSS 4](https://tailwindcss.com) via `@tailwindcss/vite` |
-| Fonts           | Self-hosted Inter Variable ([Fontsource](https://fontsource.org)) |
-| i18n            | Astro built-in routing (DE default, EN at `/en/`)                 |
-| Sitemap         | `@astrojs/sitemap` with hreflang alternates                       |
-| OG image        | Build-time SVG → PNG via `sharp`                                  |
-| Type checking   | TypeScript 5 (strict)                                             |
-| CI              | GitHub Actions → [`deploy.yml`](.github/workflows/deploy.yml)     |
-| Hosting         | GitHub Pages                                                      |
-| Runtime (build) | Node 22.12+ (see [`.nvmrc`](.nvmrc))                              |
-| Package manager | pnpm 9                                                            |
+| Layer           | Choice                                                              |
+| --------------- | ------------------------------------------------------------------- |
+| Framework       | [Astro 6](https://astro.build) (static output)                      |
+| Styling         | [Tailwind CSS 4](https://tailwindcss.com) via `@tailwindcss/vite`   |
+| Fonts           | Self-hosted Archivo Variable ([Fontsource](https://fontsource.org)) |
+| i18n            | Astro built-in routing (DE default, EN at `/en/`)                   |
+| Sitemap         | `@astrojs/sitemap` with hreflang alternates                         |
+| OG image        | Build-time SVG → PNG via `sharp`                                    |
+| Type checking   | TypeScript 5 (strict)                                               |
+| CI              | GitHub Actions → [`deploy.yml`](.github/workflows/deploy.yml)       |
+| Hosting         | GitHub Pages                                                        |
+| Runtime (build) | Node 22.12+ (see [`.nvmrc`](.nvmrc))                                |
+| Package manager | pnpm 9                                                              |
 
 ## Local development
 
 ```bash
-nvm use            # Node 22.12+ from .nvmrc
 pnpm install
 pnpm dev           # http://localhost:4321
 ```
+
+Needs Node 22.12+. If you use nvm, `nvm use` picks it up from [`.nvmrc`](.nvmrc) —
+note that nvm is a shell function, so it only exists in shells that have sourced
+`~/.nvm/nvm.sh`. Any Node 22.12+ on `PATH` works without it.
 
 Other scripts:
 
@@ -63,16 +68,50 @@ Copy [`.env.example`](.env.example) to `.env.local` for local overrides. Product
 ## Project layout
 
 ```
-public/               static assets (favicon, og.svg, robots, llms.txt, CNAME)
+public/               static assets (favicon.svg, og.svg, robots, llms.txt, CNAME)
 src/
   pages/              .astro routes (DE at /, EN at /en/)
   layouts/            BaseLayout
-  components/         Hero, Header, Footer, ContactCTA, Section, ...
+  components/         Wordmark, Hero, Header, Footer, ContactCTA, Section, ...
   i18n/               typed string tables (de.ts, en.ts)
-  styles/global.css   Tailwind v4 @theme tokens + accent palette
-scripts/              build-time helpers (OG image generation via sharp)
+  styles/global.css   Tailwind v4 @theme tokens
+scripts/              build-time helpers (raster asset generation via sharp)
 .github/workflows/    CI definition
 ```
+
+## Design system
+
+Source: **Faviens — Design Handoff, 2026-08-08**.
+
+### Settled
+
+| Area     | Decision                                                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Palette  | `--color-paper` `#FDFDFB`, `--color-ink` `#0E0E10`, `--color-grey` `#71716E`, `--color-hair` `#E4E3DE`, gold `#A6813A` / `#8A6B22` / `#D9B96E`, tonal ramp `--color-t1`–`--color-t4` |
+| Typeface | Archivo, single family. Hierarchy from size, weight and colour only — never add a second family                                                                                      |
+| Layout   | Zürich modernist: strict grid, hairline rules, numbered sections in a 2.5rem left column, copy at 58ch, one gold event per screen                                                    |
+
+Token names match the handoff one-to-one, except the handoff's `--black`, which is `--color-ink` here so it does not clobber Tailwind's built-in black.
+
+Two contrast rules are load-bearing and enforced in the components: gold on paper is ~3:1, so it is **never** used for running text or for type under 18px (`--color-gold-d` covers small type), and marks below 72px drop all ramps for flat gold.
+
+### Provisional — no logo has been chosen
+
+The handoff ships 31 candidates and leaves the wordmark-vs-emblem fork open. Pending that decision the site uses **Family 1 / Direction 1** — lowercase Archivo 800 at `-0.035em` with the tittle enlarged in gold — because it is the wordmark system the handoff recommends, it makes no software claim, and the mark and the gold event are the same object.
+
+Everything logo-related is contained in three files:
+
+- [`src/components/Wordmark.astro`](src/components/Wordmark.astro) — the mark itself
+- [`public/favicon.svg`](public/favicon.svg) — `f.` monogram tile, one of the open avatar options
+- [`public/og.svg`](public/og.svg) — carries no gold tittle; the build rasteriser has no Archivo, so a dot placed by estimated metrics would land off the stem
+
+Changing direction means editing those, not redesigning the site.
+
+Note on the tittle: the handoff's `bottom: .57em` assumes a box whose bottom edge is the baseline. An inline box bottom sits at the descender, so that value drops the dot into the x-height and onto the letterforms. `Wordmark.astro` uses `.745em` against a `line-height: 1` box, measured against Archivo 800.
+
+### Still open
+
+The name has **not been legally cleared** (Zefix, Swissreg classes 9/35/42, TMview, WIPO). The imprint and privacy pages do not exist yet — `Header` and `Footer` accept `navLinks` / `legalLinks` and render those blocks only when non-empty.
 
 ## Deployment
 

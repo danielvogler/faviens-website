@@ -1,5 +1,12 @@
+<!--
+  PROVISIONAL. Regenerate once a mark is chosen. The wordmark here carries no
+  gold tittle: the build rasteriser has no Archivo, so a dot positioned over
+  the i by estimated metrics would land off the stem (handoff §8.1, §8.4).
+  The gold event is the interpunct in the descriptor instead: metric-free,
+  and a divider rather than type, so the small-type gold floor does not apply.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#fbfbfd"/>
-  <text x="80" y="360" font-family="system-ui, sans-serif" font-size="130" font-weight="500" fill="#1a1a1a" letter-spacing="-0.04em">FAVIENS<tspan fill="#2f6fd0">.</tspan></text>
-  <text x="80" y="450" font-family="system-ui, sans-serif" font-size="28" fill="#7d7d7d" letter-spacing="0.04em">AI · AGENTIC AI · ANALYTICS · DATA</text>
+  <rect width="1200" height="630" fill="#FDFDFB"/>
+  <text x="90" y="368" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="150" font-weight="800" letter-spacing="-5.25" fill="#0E0E10">faviens</text>
+  <text x="94" y="446" xml:space="preserve" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="500" letter-spacing="6.4" fill="#71716E">AGENTIC-AI CONSULTING <tspan fill="#A6813A">·</tspan> ZÜRICH</text>
 </svg>

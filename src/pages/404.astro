@@ -12,11 +12,8 @@ const strings = t(lang).pages.notFound;
   <PageHeader heading={strings.heading} lead={strings.lead} />
 
   <Section>
-    <a
-      href={getHomeHref(lang)}
-      class="link-underline text-lg text-ink hover:text-accent transition-colors"
-    >
-      {strings.back} →
+    <a href={getHomeHref(lang)} class="link-underline text-lg hover:text-gold-d transition-colors">
+      {strings.back}
     </a>
   </Section>
 </BaseLayout>

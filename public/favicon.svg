@@ -1,4 +1,12 @@
+<!--
+  PROVISIONAL. The avatar is an open question in the handoff (§10 Q5) and no
+  logo has been chosen. This is the "f." monogram tile reading: black tile,
+  paper f, one gold event. Flat gold with no ramp, per the reproduction floor
+  (§4) — this renders at 16px. Set in a grotesque fallback because the build
+  rasteriser has no access to Archivo; regenerate once the mark is final.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
-  <rect width="400" height="400" fill="#f6f7fb"/>
-  <text x="200" y="290" font-family="Inter, system-ui, sans-serif" font-size="240" font-weight="700" text-anchor="middle" letter-spacing="-0.06em" fill="#1a1a1a">F<tspan fill="#2f6fd0">.</tspan></text>
+  <rect width="400" height="400" fill="#0E0E10"/>
+  <text x="162" y="292" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="260" font-weight="800" text-anchor="middle" letter-spacing="-9" fill="#FDFDFB">f</text>
+  <circle cx="248" cy="262" r="30" fill="#A6813A"/>
 </svg>

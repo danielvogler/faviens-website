@@ -17,7 +17,6 @@ const { title, description, lang = 'de' } = Astro.props;
 const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
 
 const strings = t(lang);
-const contactHref = `mailto:${CONTACT_EMAIL}`;
 ---
 
 <!doctype html>
@@ -33,7 +32,7 @@ const contactHref = `mailto:${CONTACT_EMAIL}`;
     >
       {strings.a11y.skipToContent}
     </a>
-    <Header lang={lang} contactLabel={strings.nav.contact} contactHref={contactHref}>
+    <Header lang={lang}>
       <LanguageSwitcher slot="language-switcher" lang={lang} />
     </Header>
     <main id="main">
