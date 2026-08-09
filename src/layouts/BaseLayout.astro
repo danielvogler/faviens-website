@@ -4,7 +4,8 @@ import Schema from '~/components/Schema.astro';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
 import LanguageSwitcher from '~/components/LanguageSwitcher.astro';
-import { t, type Locale } from '~/i18n';
+import { getLegalLinks, t, type Locale } from '~/i18n';
+import { COMPANY } from '~/data/company';
 
 interface Props {
   title: string;
@@ -14,9 +15,12 @@ interface Props {
 
 const { title, description, lang = 'de' } = Astro.props;
 
-const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
+// `||` and not `??`: an unset GitHub Actions secret expands to an empty string,
+// which is not nullish, so `??` would let the empty value through.
+const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || COMPANY.email;
 
 const strings = t(lang);
+const legalLinks = getLegalLinks(lang);
 ---
 
 <!doctype html>
@@ -38,6 +42,6 @@ const strings = t(lang);
     <main id="main">
       <slot />
     </main>
-    <Footer lang={lang} contactEmail={CONTACT_EMAIL} />
+    <Footer lang={lang} legalLinks={legalLinks} contactEmail={CONTACT_EMAIL} />
   </body>
 </html>

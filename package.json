@@ -14,7 +14,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.2",

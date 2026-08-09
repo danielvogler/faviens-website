@@ -1,14 +1,22 @@
 ---
 /*
- * PROVISIONAL MARK — no logo has been chosen (handoff §2, §10 Q1/Q2).
+ * PROVISIONAL MARK. No logo has been chosen (handoff §2, §10 Q1/Q2).
  * This implements Family 1 / Direction 1: lowercase Archivo 800 at -0.035em
  * with the tittle enlarged in gold. It is the wordmark system (Option A, the
  * handoff's recommendation), lowercase, and it makes no software claim.
  * Swapping directions means editing this one file.
  *
- * The dot is a positioned element over a dotless i (handoff §8.1). The .iw
- * wrapper MUST reset letter-spacing, or it inherits the wordmark's negative
- * tracking, widens its box asymmetrically and pushes the dot off the stem.
+ * The dot is a positioned element over the i (handoff §8.1). The .iw wrapper
+ * MUST reset letter-spacing, or it inherits the wordmark's negative tracking,
+ * widens its box asymmetrically and pushes the dot off the stem.
+ *
+ * The handoff calls for a dotless i (U+0131) with the dot drawn over it. That
+ * renders correctly but makes the DOM text "favıens", which is what a crawler
+ * or a screen reader gets. Pairing it with a visually-hidden "faviens" only
+ * made it worse: the live page's h1 read "faviens favıens" to a text
+ * extractor. So the real letter stays, and the enlarged gold dot is placed to
+ * occlude the native tittle completely. Verified against Archivo 800; recheck
+ * with a screenshot if the size, weight or typeface ever changes.
  */
 interface Props {
   /** Sets the mark's size; the dot scales with it via em units. */
@@ -22,12 +30,9 @@ const { class: className = '', mono = false } = Astro.props;
 const dotClass = mono ? 'bg-ink' : 'bg-gold';
 ---
 
-<span class:list={['wordmark', className]}>
-  <span class="sr-only">faviens</span>
-  <span aria-hidden="true"
-    >fav<span class="iw">&#305;<span class:list={['dot', dotClass]}></span></span>ens</span
-  >
-</span>
+<span class:list={['wordmark', className]}
+  >fav<span class="iw">i<span class:list={['dot', dotClass]}></span></span>ens</span
+>
 
 <style>
   .wordmark {
@@ -58,7 +63,7 @@ const dotClass = mono ? 'bg-ink' : 'bg-gold';
        Measured against Archivo 800: baseline sits .17em above this box's
        bottom edge and the x-height tops out at .557em, so .745em lands the
        dot just clear of the a/v/e/n/s. An enlarged tittle cannot also stay
-       under the f ascender (.784em) — the gap is narrower than the dot — so
+       under the f ascender (.784em), because the gap is narrower than the dot, so
        it overshoots slightly by design rather than colliding with type. */
     bottom: 0.745em;
     width: 0.27em;

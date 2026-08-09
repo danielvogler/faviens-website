@@ -27,3 +27,15 @@ pnpm-debug.log*
 .idea/
 *.swp
 *.swo
+
+# off-site brand assets and identity source material, local-only
+brand/
+
+# scratch space, local-only: source material, drafts and working notes
+/tmp/
+
+# local-only leak-scan wordlist (the terms themselves are confidential)
+.leakwords
+
+# local-only working notes and open decisions
+TODOS.md

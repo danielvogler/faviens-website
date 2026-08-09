@@ -1,0 +1,26 @@
+#!/bin/sh
+# Commit messages are published with the commit and cannot be edited after a
+# push without rewriting history. They must not name anything that lives behind
+# .gitignore: the existence and filename of a local-only document is itself
+# information we do not publish.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+
+set -e
+
+msg_file="$1"
+root=$(git rev-parse --show-toplevel)
+
+[ -f "$root/.leakwords" ] || exit 0
+
+hits=$(grep -v '^#' "$root/.leakwords" | sed '/^[[:space:]]*$/d' | while read -r term; do
+  if grep -iqF "$term" "$msg_file"; then printf '  %s\n' "$term"; fi
+done)
+
+if [ -n "$hits" ]; then
+  printf '\033[31mcommit-msg blocked:\033[0m the message names a protected term:\n%s\n' "$hits" >&2
+  printf 'Refer to the ignored path itself (for example /tmp/) rather than its contents.\n' >&2
+  exit 1
+fi
+
+exit 0

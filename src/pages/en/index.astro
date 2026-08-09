@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Hero from '~/components/Hero.astro';
-import Section from '~/components/Section.astro';
 import ContactCTA from '~/components/ContactCTA.astro';
 import { t } from '~/i18n';
 
@@ -21,12 +20,6 @@ const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
     status={strings.hero.status}
     lead={strings.hero.lead}
   />
-
-  <Section number={strings.name.number} heading={strings.name.heading}>
-    <p class="max-w-(--container-measure) text-lg text-grey leading-relaxed">
-      {strings.name.body}
-    </p>
-  </Section>
 
   <ContactCTA lang={lang} contactEmail={CONTACT_EMAIL} />
 </BaseLayout>

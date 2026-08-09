@@ -2,7 +2,7 @@
   PROVISIONAL. The avatar is an open question in the handoff (§10 Q5) and no
   logo has been chosen. This is the "f." monogram tile reading: black tile,
   paper f, one gold event. Flat gold with no ramp, per the reproduction floor
-  (§4) — this renders at 16px. Set in a grotesque fallback because the build
+  (§4), since this renders at 16px. Set in a grotesque fallback because the build
   rasteriser has no access to Archivo; regenerate once the mark is final.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">

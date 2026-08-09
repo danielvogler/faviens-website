@@ -29,7 +29,10 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      # `pnpm verify` runs the build, so dist/ is produced here as well.
+      - run: pnpm verify
+      # Lets the smoke job tell this deployment apart from the previous one.
+      - run: echo "${{ github.sha }}" > dist/build-id.txt
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -43,3 +46,87 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # A green deploy only means the artifact was published. It does not mean the
+  # live site is serving it, so check the real domain before calling it done.
+  # This job stays red until the GoDaddy DNS records and the Pages custom domain
+  # are in place. That is the intended signal, not a bug: it is the check that
+  # tells you the domain work is finished.
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      # A 200 from the homepage is not evidence of anything: the CDN happily
+      # serves the previous build with a 200 while the new one propagates.
+      # Wait for the site to report this run's commit instead.
+      - name: Wait for this build to go live
+        env:
+          BASE: https://faviens.com
+          EXPECTED: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          for attempt in $(seq 1 20); do
+            # -f so a 404 yields nothing instead of the error page, and a hard
+            # length cap so a misconfigured route can never dump HTML into the log.
+            live=$(curl -fsS --max-time 10 "$BASE/build-id.txt" 2>/dev/null | head -c 40 | tr -d '[:space:]')
+            if [ "$live" = "$EXPECTED" ]; then
+              echo "live build is $EXPECTED after $attempt attempt(s)"
+              exit 0
+            fi
+            echo "attempt $attempt: live build is \"${live:-unavailable}\", waiting"
+            sleep 15
+          done
+          echo "::error::The new build did not reach the live site within five minutes."
+          exit 1
+
+      - name: Check the live site
+        env:
+          BASE: https://faviens.com
+        run: |
+          # GitHub runs this with `bash -e`, which would abort at the first
+          # failed assertion and skip the summary. Collect failures instead.
+          set +e
+          set -uo pipefail
+          page=$(mktemp)
+          fail=0
+
+          # Always fetch into a file. `curl | grep -q` lets grep close the pipe
+          # as soon as it matches, which can make curl exit non-zero under
+          # pipefail and report a passing check as a failure.
+          fetch() { curl -fsSL --max-time 20 -o "$page" "$BASE$1" 2>/dev/null; }
+          http_code() { curl -sSL --max-time 20 -o /dev/null -w '%{http_code}' "$BASE$1" 2>/dev/null || echo 000; }
+
+          reachable() { [ "$(http_code "$1")" = "200" ]; }
+          has_text() { fetch "$1" && grep -qF -- "$2" "$page"; }
+
+          # Retry before believing a failure: the CDN can serve a mix of old
+          # and new edges for a short window after a deploy.
+          retry() {
+            description=$1
+            shift
+            for attempt in 1 2 3; do
+              "$@" && return 0
+              [ "$attempt" -lt 3 ] && sleep 10
+            done
+            echo "FAIL  $description"
+            fail=1
+            return 1
+          }
+
+          for path in / /en /sitemap-index.xml /robots.txt /llms.txt; do
+            retry "$path is not reachable" reachable "$path" \
+              || echo "      last status was $(http_code "$path")"
+          done
+
+          retry '/ does not show the wordmark' has_text / faviens
+          retry '/ does not show the contact address' has_text / hello@faviens.com
+          retry '/en is not in English' has_text /en 'Coming soon'
+
+          rm -f "$page"
+
+          if [ "$fail" -ne 0 ]; then
+            live=$(curl -fsS --max-time 10 "$BASE/build-id.txt" 2>/dev/null | head -c 40 | tr -d '[:space:]')
+            echo "::error::Live site checks failed. Live build id ${live:-unavailable}, expected ${GITHUB_SHA}."
+            exit 1
+          fi
+          echo "live site verified"

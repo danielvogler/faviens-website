@@ -1,0 +1,31 @@
+#!/bin/sh
+# Local guard against publishing something that cannot be unpublished.
+# The repository is public and main deploys on push, so a secret that reaches
+# the remote is exposed immediately and stays in history.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+# Bypass in an emergency: git commit --no-verify
+
+set -e
+
+fail() {
+  printf '\033[31mpre-commit blocked:\033[0m %s\n' "$1" >&2
+  exit 1
+}
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# Local-only material. .env.example is the deliberate exception.
+offenders=$(printf '%s\n' "$staged" | grep -E '^(tmp|brand)/|(^|/)\.env(\.example)?$|(^|/)\.env\.|(^|/)\.leakwords$' | grep -v '^\.env\.example$' || true)
+[ -n "$offenders" ] && fail "local-only paths are staged:
+$offenders"
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --staged --redact --no-banner --exit-code 1 . \
+    || fail 'gitleaks found a secret in the staged changes'
+else
+  printf '\033[33mnote:\033[0m gitleaks not installed, secret scan skipped (brew install gitleaks)\n' >&2
+fi
+
+exit 0

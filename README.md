@@ -11,7 +11,7 @@
 
 Static, bilingual (DE / EN) placeholder site. Zero JavaScript framework, self-hosted fonts, no third-party tracking. Built with Astro and Tailwind v4, deployed via GitHub Actions to GitHub Pages, served from a custom domain. Currently a single coming-soon page; the component and i18n scaffolding is in place to grow into the full site.
 
-Implements the Faviens design handoff of 2026-08-08 — see [Design system](#design-system) for which parts are settled and which are still provisional.
+Implements the Faviens design handoff of 2026-08-08. See [Design system](#design-system) for which parts are settled and which are still provisional.
 
 ## Build pipeline
 
@@ -45,10 +45,11 @@ flowchart LR
 
 ```bash
 pnpm install
-pnpm dev           # http://localhost:4321
+git config core.hooksPath .githooks   # once per clone, arms the guards
+pnpm dev                              # http://localhost:4321
 ```
 
-Needs Node 22.12+. If you use nvm, `nvm use` picks it up from [`.nvmrc`](.nvmrc) —
+Needs Node 22.12+. If you use nvm, `nvm use` picks it up from [`.nvmrc`](.nvmrc);
 note that nvm is a shell function, so it only exists in shells that have sourced
 `~/.nvm/nvm.sh`. Any Node 22.12+ on `PATH` works without it.
 
@@ -59,7 +60,31 @@ pnpm check         # astro check + tsc strict
 pnpm build         # produces ./dist
 pnpm preview       # serves ./dist locally on :4321
 pnpm format        # prettier --write .
+pnpm verify        # the full gate, see below
 ```
+
+## Quality gate
+
+`pnpm verify` ([`scripts/verify.mjs`](scripts/verify.mjs), dependency-free) is
+what CI runs and what blocks a merge. It checks the build and strict type-check,
+prettier cleanliness, em-dashes, generic credential patterns, terms from a
+local-only `.leakwords`, confidential paths that are tracked or staged, and
+German/English parity. `pnpm verify --skip-build` is the fast variant.
+
+Secret protection is layered, because on a public repository that deploys on
+push, a secret caught after the push is already public:
+
+| Layer                                          | What it does                                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| [`.githooks/pre-commit`](.githooks/pre-commit) | Blocks local-only paths and runs `gitleaks git --staged`. Needs `brew install gitleaks`; degrades to a warning without it |
+| [`.githooks/commit-msg`](.githooks/commit-msg) | Blocks commit messages naming a term from `.leakwords`                                                                    |
+| [`verify.yml`](.github/workflows/verify.yml)   | `gitleaks` over the **full history** on every PR, plus `pnpm verify`                                                      |
+| [`deploy.yml`](.github/workflows/deploy.yml)   | `pnpm verify` again on the deploy path                                                                                    |
+
+`git config core.hooksPath .githooks` is per clone and is not carried in the
+repository, so a fresh clone is unprotected until it is run.
+
+See [AGENTS.md](./AGENTS.md) for the full working conventions.
 
 ## Environment
 
@@ -81,29 +106,29 @@ scripts/              build-time helpers (raster asset generation via sharp)
 
 ## Design system
 
-Source: **Faviens — Design Handoff, 2026-08-08**.
+Source: **Faviens Design Handoff, 2026-08-08**.
 
 ### Settled
 
 | Area     | Decision                                                                                                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Palette  | `--color-paper` `#FDFDFB`, `--color-ink` `#0E0E10`, `--color-grey` `#71716E`, `--color-hair` `#E4E3DE`, gold `#A6813A` / `#8A6B22` / `#D9B96E`, tonal ramp `--color-t1`–`--color-t4` |
-| Typeface | Archivo, single family. Hierarchy from size, weight and colour only — never add a second family                                                                                      |
+| Typeface | Archivo, single family. Hierarchy from size, weight and colour only. Never add a second family                                                                                       |
 | Layout   | Zürich modernist: strict grid, hairline rules, numbered sections in a 2.5rem left column, copy at 58ch, one gold event per screen                                                    |
 
 Token names match the handoff one-to-one, except the handoff's `--black`, which is `--color-ink` here so it does not clobber Tailwind's built-in black.
 
 Two contrast rules are load-bearing and enforced in the components: gold on paper is ~3:1, so it is **never** used for running text or for type under 18px (`--color-gold-d` covers small type), and marks below 72px drop all ramps for flat gold.
 
-### Provisional — no logo has been chosen
+### Provisional: no logo has been chosen
 
-The handoff ships 31 candidates and leaves the wordmark-vs-emblem fork open. Pending that decision the site uses **Family 1 / Direction 1** — lowercase Archivo 800 at `-0.035em` with the tittle enlarged in gold — because it is the wordmark system the handoff recommends, it makes no software claim, and the mark and the gold event are the same object.
+The handoff ships 31 candidates and leaves the wordmark-vs-emblem fork open. Pending that decision the site uses **Family 1 / Direction 1**, lowercase Archivo 800 at `-0.035em` with the tittle enlarged in gold, because it is the wordmark system the handoff recommends, it makes no software claim, and the mark and the gold event are the same object.
 
 Everything logo-related is contained in three files:
 
-- [`src/components/Wordmark.astro`](src/components/Wordmark.astro) — the mark itself
-- [`public/favicon.svg`](public/favicon.svg) — `f.` monogram tile, one of the open avatar options
-- [`public/og.svg`](public/og.svg) — carries no gold tittle; the build rasteriser has no Archivo, so a dot placed by estimated metrics would land off the stem
+- [`src/components/Wordmark.astro`](src/components/Wordmark.astro), the mark itself
+- [`public/favicon.svg`](public/favicon.svg), the `f.` monogram tile, one of the open avatar options
+- [`public/og.svg`](public/og.svg), which carries no gold tittle; the build rasteriser has no Archivo, so a dot placed by estimated metrics would land off the stem
 
 Changing direction means editing those, not redesigning the site.
 
@@ -111,18 +136,21 @@ Note on the tittle: the handoff's `bottom: .57em` assumes a box whose bottom edg
 
 ### Still open
 
-The name has **not been legally cleared** (Zefix, Swissreg classes 9/35/42, TMview, WIPO). The imprint and privacy pages do not exist yet — `Header` and `Footer` accept `navLinks` / `legalLinks` and render those blocks only when non-empty.
+The name has **not been legally cleared** (Zefix, Swissreg classes 9/35/42, TMview, WIPO). The imprint and privacy pages do not exist yet. `Header` and `Footer` accept `navLinks` / `legalLinks` and render those blocks only when non-empty.
 
 ## Deployment
 
 `main` is the deploy branch. Every push triggers [`deploy.yml`](.github/workflows/deploy.yml):
 
 1. Install dependencies (pnpm, frozen lockfile)
-2. `astro check && astro build`
+2. `pnpm verify`, which runs `astro check && astro build`
 3. Upload `dist/` as a Pages artifact
 4. Publish via `actions/deploy-pages`
+5. `smoke`: wait for the live domain to serve this run's commit, then check the real pages
 
 The artifact contains `public/CNAME`, which keeps `faviens.com` wired to the deployment across runs.
+
+The `smoke` job stays red until the DNS records below and the Pages custom domain are in place. That is the intended signal: it is the check that tells you the domain work is finished.
 
 ### DNS
 
@@ -134,7 +162,7 @@ The artifact contains `public/CNAME`, which keeps `faviens.com` wired to the dep
 | AAAA  | `@`   | `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153` |
 | CNAME | `www` | `danielvogler.github.io`                                                                   |
 
-`faviens.ch` and `faviens.de` are 301-forwarded to `https://faviens.com` via GoDaddy domain forwarding (no masking) — GitHub Pages supports only one custom domain per repository.
+`faviens.ch` and `faviens.de` are 301-forwarded to `https://faviens.com` via GoDaddy domain forwarding (no masking). GitHub Pages supports only one custom domain per repository.
 
 ## SEO and LLM indexing
 

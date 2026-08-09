@@ -2,19 +2,19 @@
 @import '@fontsource-variable/archivo/wght.css';
 
 /*
- * Faviens design tokens — from the design handoff (2026-08-08), section 4.
+ * Faviens design tokens, from the design handoff (2026-08-08), section 4.
  * Token names match the handoff one-to-one, except the handoff's `--black`,
  * which is `--color-ink` here so it does not clobber Tailwind's built-in black.
  */
 @theme {
   /* ground */
-  --color-paper: #fdfdfb; /* page background — warm white, never pure #fff */
+  --color-paper: #fdfdfb; /* page background, warm white, never pure #fff */
   --color-ink: #0e0e10; /* handoff --black: text, tiles; used sparingly */
   --color-grey: #71716e; /* secondary text only */
   --color-hair: #e4e3de; /* 1px rules, card borders, grid lines */
 
   /* gold */
-  --color-gold: #a6813a; /* primary — wordmark, marks, accents */
+  --color-gold: #a6813a; /* primary: wordmark, marks, accents */
   --color-gold-d: #8a6b22; /* small type and anything under 18px */
   --color-gold-l: #d9b96e; /* highlights, reversed settings */
 
@@ -25,7 +25,7 @@
   --color-t4: #a6813a; /* strongest */
 
   /* Archivo is the single family. Hierarchy comes from size, weight and
-     colour only — never introduce a second typeface (handoff §5, §11). */
+     colour only. Never introduce a second typeface (handoff §5, §11). */
   --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
 
   --container-content: 72rem;
@@ -56,7 +56,7 @@ a {
 }
 
 /*
- * Descriptor lockup and eyebrow labels — handoff §5.
+ * Descriptor lockup and eyebrow labels, handoff §5.
  * Never gold: these sit far below 18px, where gold fails contrast.
  */
 @utility lockup {

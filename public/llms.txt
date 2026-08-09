@@ -3,11 +3,6 @@
 > Agentic-AI consulting based in Zürich, Switzerland. The full site is in
 > preparation; this domain currently serves a placeholder page.
 
-## The name
-
-The name blends two Latin words: favere, to act in someone's favour, and
-agens, agent. It is a coinage, not a Latin word in its own right.
-
 ## Pronunciation
 
 - English: FAY-vee-enz, /ˈfeɪviənz/
@@ -17,6 +12,13 @@ agens, agent. It is a coinage, not a Latin word in its own right.
 
 - [Deutsch](https://faviens.com/)
 - [English](https://faviens.com/en)
+
+## Legal
+
+- [Impressum](https://faviens.com/impressum)
+- [Datenschutz](https://faviens.com/datenschutz)
+- [Imprint](https://faviens.com/en/imprint)
+- [Privacy](https://faviens.com/en/privacy)
 
 ## Contact
 

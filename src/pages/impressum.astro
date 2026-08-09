@@ -1,0 +1,38 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import LegalPage from '~/components/LegalPage.astro';
+import Section from '~/components/Section.astro';
+import { t } from '~/i18n';
+import { COMPANY, addressLines } from '~/data/company';
+
+const lang = 'de' as const;
+const s = t(lang).pages.imprint;
+
+const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || COMPANY.email;
+const lines = addressLines(COMPANY.address);
+const legalName = [COMPANY.name, COMPANY.legalForm].filter(Boolean).join(' ');
+---
+
+<BaseLayout title={s.title} description={s.description} lang={lang}>
+  <LegalPage heading={s.heading} sections={s.sections}>
+    <Section>
+      <div class="max-w-(--container-measure) space-y-8 text-base text-grey leading-relaxed">
+        <div class="space-y-1">
+          <p class="lockup text-ink">{s.responsibleHeading}</p>
+          <p class="text-ink">{legalName}</p>
+          {lines.map((line) => <p>{line}</p>)}
+        </div>
+
+        <div class="space-y-1">
+          <p class="lockup text-ink">{s.contactHeading}</p>
+          <p><a href={`mailto:${CONTACT_EMAIL}`} class="link-underline">{CONTACT_EMAIL}</a></p>
+        </div>
+
+        <div class="space-y-1">
+          <p class="lockup text-ink">{s.registerHeading}</p>
+          <p>{COMPANY.uid ?? s.registerPending}</p>
+        </div>
+      </div>
+    </Section>
+  </LegalPage>
+</BaseLayout>

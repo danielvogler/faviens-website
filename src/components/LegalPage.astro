@@ -1,0 +1,43 @@
+---
+/*
+ * Shared shell for the Impressum and Datenschutz pages. Both are prose at the
+ * 58ch measure under a numbered-section rule, so the only difference between
+ * them is the section list and the optional address block.
+ */
+import PageHeader from '~/components/PageHeader.astro';
+import Section from '~/components/Section.astro';
+import type { LegalSection } from '~/i18n/de';
+
+interface Props {
+  heading: string;
+  lead?: string;
+  updated?: string;
+  sections: LegalSection[];
+}
+
+const { heading, lead, updated, sections } = Astro.props;
+---
+
+<PageHeader heading={heading} lead={lead} />
+
+<slot />
+
+{
+  sections.map((section, index) => (
+    <Section number={String(index + 1).padStart(2, '0')} heading={section.heading}>
+      <div class="max-w-(--container-measure) space-y-4 text-base text-grey leading-relaxed">
+        {section.body.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+    </Section>
+  ))
+}
+
+{
+  updated && (
+    <div class="px-6 md:px-10 pb-8">
+      <p class="mx-auto max-w-(--container-content) eyebrow text-grey">{updated}</p>
+    </div>
+  )
+}

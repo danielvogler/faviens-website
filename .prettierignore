@@ -1,0 +1,11 @@
+# build output
+dist/
+.astro/
+
+# dependencies and lockfiles (reformatting a lockfile invites merge conflicts)
+node_modules/
+pnpm-lock.yaml
+
+# local-only scratch space
+tmp/
+brand/

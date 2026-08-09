@@ -1,0 +1,12 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import LegalPage from '~/components/LegalPage.astro';
+import { t } from '~/i18n';
+
+const lang = 'de' as const;
+const s = t(lang).pages.privacy;
+---
+
+<BaseLayout title={s.title} description={s.description} lang={lang}>
+  <LegalPage heading={s.heading} lead={s.lead} updated={s.updated} sections={s.sections} />
+</BaseLayout>
