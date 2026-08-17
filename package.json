@@ -8,6 +8,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "predev": "node scripts/generate-og.mjs",
     "dev": "astro dev",
     "start": "astro dev",
     "prebuild": "node scripts/generate-og.mjs",

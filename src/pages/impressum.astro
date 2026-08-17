@@ -13,7 +13,7 @@ const lines = addressLines(COMPANY.address);
 const legalName = [COMPANY.name, COMPANY.legalForm].filter(Boolean).join(' ');
 ---
 
-<BaseLayout title={s.title} description={s.description} lang={lang}>
+<BaseLayout title={s.title} description={s.description} lang={lang} background="off">
   <LegalPage heading={s.heading} sections={s.sections}>
     <Section>
       <div class="max-w-(--container-measure) space-y-8 text-base text-grey leading-relaxed">

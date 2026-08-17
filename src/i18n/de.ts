@@ -15,6 +15,12 @@ export interface Strings {
   };
   hero: {
     descriptor: string;
+    /**
+     * The three services, with the prefix that belongs to all of them stated
+     * once. Ordered as an engagement runs: literacy first, then the decisions
+     * it makes possible, then what gets built.
+     */
+    services: { prefix: string; items: readonly string[] };
     status: string;
     lead: string;
   };
@@ -65,6 +71,7 @@ export const de: Strings = {
   },
   hero: {
     descriptor: 'Agentic-AI-Beratung · Zürich',
+    services: { prefix: 'KI-Agenten', items: ['Upskilling', 'Strategie', 'Umsetzung'] },
     status: 'Demnächst',
     lead: 'Faviens ist eine Beratung für agentische KI mit Sitz in Zürich. Der vollständige Auftritt folgt in Kürze.',
   },

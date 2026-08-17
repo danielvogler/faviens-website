@@ -12,6 +12,7 @@ export const en: Strings = {
   },
   hero: {
     descriptor: 'Agentic-AI consulting · Zürich',
+    services: { prefix: 'AI Agents', items: ['Upskilling', 'Strategy', 'Implementation'] },
     status: 'Coming soon',
     lead: 'Faviens is an agentic-AI consultancy based in Zürich. The full site follows shortly.',
   },

@@ -3,26 +3,75 @@
 
 /*
  * Faviens design tokens, from the design handoff (2026-08-08), section 4.
+ *
+ * THIS BLOCK IS THE ONLY PLACE A COLOUR IS STATED. Nothing else in the
+ * repository contains a hex value or an rgb triplet: components, the node
+ * field, the keyframes, the favicon and the OG image all resolve back to here.
+ * Changing the palette is changing the nineteen numbers below and nothing else,
+ * and that is a property worth protecting when the next direction is chosen.
+ *
+ * Two conventions make that possible:
+ *
+ * The accent family is a draft adopted on 2026-08-17, replacing the handoff's
+ * gold. That gold is in git history if it is ever wanted back.
+ *
+ *   - Every colour is written as an rgb triplet first. A triplet is the only
+ *     form that can also carry an alpha, so `rgb(var(--rgb-accent) / 0.35)`
+ *     works in a keyframe and `rgb(255 0 13 / 0.35)` can be composed on a
+ *     canvas, neither of which a hex token can do without being restated.
+ *   - The accent family is named for its role, not its colour. It was called
+ *     `gold` until the palette came up for review, at which point every
+ *     `text-gold-d` in the codebase would have rendered red while still saying
+ *     gold. Names outlive values.
+ */
+:root {
+  /* ground */
+  --rgb-paper: 253 253 251; /* page background, warm white, never pure #fff */
+  --rgb-ink: 14 14 16; /* handoff --black: text, tiles; used sparingly */
+  --rgb-grey: 113 113 110; /* secondary text only */
+  --rgb-hair: 228 227 222; /* 1px rules, card borders, grid lines */
+
+  /* accent: the one family that carries the identity */
+  --rgb-accent: 255 0 13; /* primary: wordmark, marks, accents */
+  --rgb-accent-d: 214 0 11; /* small type and anything under 18px */
+  --rgb-accent-l: 255 107 115; /* highlights, reversed settings */
+  --rgb-cream: 255 217 219; /* lightest point of a mark on a dark ground */
+
+  /* tonal ramp, faintest to strongest. t1 to t4 are the handoff's; t0 and t5
+     extend it at both ends for the seven-step wordmark ramp. */
+  --rgb-t0: 255 201 204;
+  --rgb-t1: 255 154 160;
+  --rgb-t2: 255 90 100;
+  --rgb-t3: 255 39 51;
+  --rgb-t4: 255 0 13; /* the accent itself */
+  --rgb-t5: 143 0 8;
+}
+
+/*
  * Token names match the handoff one-to-one, except the handoff's `--black`,
- * which is `--color-ink` here so it does not clobber Tailwind's built-in black.
+ * which is `--color-ink` here so it does not clobber Tailwind's built-in black,
+ * and its `gold`, which is `accent` for the reason given above.
  */
 @theme {
   /* ground */
-  --color-paper: #fdfdfb; /* page background, warm white, never pure #fff */
-  --color-ink: #0e0e10; /* handoff --black: text, tiles; used sparingly */
-  --color-grey: #71716e; /* secondary text only */
-  --color-hair: #e4e3de; /* 1px rules, card borders, grid lines */
+  --color-paper: rgb(var(--rgb-paper));
+  --color-ink: rgb(var(--rgb-ink));
+  --color-grey: rgb(var(--rgb-grey));
+  --color-hair: rgb(var(--rgb-hair));
 
-  /* gold */
-  --color-gold: #a6813a; /* primary: wordmark, marks, accents */
-  --color-gold-d: #8a6b22; /* small type and anything under 18px */
-  --color-gold-l: #d9b96e; /* highlights, reversed settings */
+  /* accent */
+  --color-accent: rgb(var(--rgb-accent));
+  --color-accent-d: rgb(var(--rgb-accent-d));
+  --color-accent-l: rgb(var(--rgb-accent-l));
+  --color-cream: rgb(var(--rgb-cream));
 
   /* tonal ramp (caps wordmark + rule gradients) */
-  --color-t1: #d3bf90; /* faintest */
-  --color-t2: #c3a768;
-  --color-t3: #b4934b;
-  --color-t4: #a6813a; /* strongest */
+  --color-t0: rgb(var(--rgb-t0));
+  --color-t1: rgb(var(--rgb-t1));
+  --color-t2: rgb(var(--rgb-t2));
+  --color-t3: rgb(var(--rgb-t3));
+  --color-t4: rgb(var(--rgb-t4));
+  --color-t5: rgb(var(--rgb-t5));
 
   /* Archivo is the single family. Hierarchy comes from size, weight and
      colour only. Never introduce a second typeface (handoff §5, §11). */
@@ -32,6 +81,18 @@
 
   /* Body measure. Copy is left-aligned and never full-bleed (handoff §6). */
   --container-measure: 58ch;
+}
+
+/*
+ * The node field's three colours, named for the role each one plays rather than
+ * for the token it currently points at, so the field can be re-pointed without
+ * touching the canvas. They stay triplets because the canvas composes an alpha
+ * onto each one per edge, per node and per frame.
+ */
+:root {
+  --field-edge: var(--rgb-t1); /* the mesh */
+  --field-node: var(--rgb-accent); /* the nodes */
+  --field-signal: var(--rgb-accent-l); /* traffic */
 }
 
 html {
@@ -46,7 +107,7 @@ body {
 }
 
 ::selection {
-  background: var(--color-gold);
+  background: var(--color-accent);
   color: var(--color-paper);
 }
 
@@ -57,7 +118,7 @@ a {
 
 /*
  * Descriptor lockup and eyebrow labels, handoff §5.
- * Never gold: these sit far below 18px, where gold fails contrast.
+ * Never the accent: these sit far below 18px, where it fails contrast.
  */
 @utility lockup {
   font-weight: 500;
@@ -74,7 +135,7 @@ a {
 }
 
 @utility link-underline {
-  background-image: linear-gradient(var(--color-gold), var(--color-gold));
+  background-image: linear-gradient(var(--color-accent), var(--color-accent));
   background-position: 0% 100%;
   background-repeat: no-repeat;
   background-size: 0% 1px;

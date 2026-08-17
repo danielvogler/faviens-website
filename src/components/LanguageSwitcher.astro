@@ -12,7 +12,12 @@ const otherHref = otherLocalePath(Astro.url.pathname, lang);
 ---
 
 <div class="eyebrow flex items-center gap-1.5" aria-label={strings.languageSwitcher.label}>
-  <span class="text-ink" aria-current="true">
+  <!--
+    The current language is marked in the accent rather than in ink. At this size
+    the accent itself fails contrast, so this is --color-accent-d, which is the
+    token that exists for type under 18px.
+  -->
+  <span class="text-accent-d" aria-current="true">
     {strings.languageSwitcher[lang]}
   </span>
   <span class="text-hair" aria-hidden="true">/</span>

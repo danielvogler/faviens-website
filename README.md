@@ -97,10 +97,12 @@ public/               static assets (favicon.svg, og.svg, robots, llms.txt, CNAM
 src/
   pages/              .astro routes (DE at /, EN at /en/)
   layouts/            BaseLayout
-  components/         Wordmark, Hero, Header, Footer, ContactCTA, Section, ...
+  components/         Hero, Header, Footer, ContactCTA, NodeField, ...
+  components/marks/   MarkCapsAi, the wordmark
   i18n/               typed string tables (de.ts, en.ts)
   styles/global.css   Tailwind v4 @theme tokens
 scripts/              build-time helpers (raster asset generation via sharp)
+scripts/assets/       token-templated SVG sources for the icons and OG image
 .github/workflows/    CI definition
 ```
 
@@ -110,29 +112,41 @@ Source: **Faviens Design Handoff, 2026-08-08**.
 
 ### Settled
 
-| Area     | Decision                                                                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Palette  | `--color-paper` `#FDFDFB`, `--color-ink` `#0E0E10`, `--color-grey` `#71716E`, `--color-hair` `#E4E3DE`, gold `#A6813A` / `#8A6B22` / `#D9B96E`, tonal ramp `--color-t1`–`--color-t4` |
-| Typeface | Archivo, single family. Hierarchy from size, weight and colour only. Never add a second family                                                                                       |
-| Layout   | Zürich modernist: strict grid, hairline rules, numbered sections in a 2.5rem left column, copy at 58ch, one gold event per screen                                                    |
+| Area     | Decision                                                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Palette  | `--color-paper` `#FDFDFB`, `--color-ink` `#0E0E10`, `--color-grey` `#71716E`, `--color-hair` `#E4E3DE`, accent `#FF000D` / `#D6000B` / `#FF6B73`, tonal ramp `--color-t0`–`--color-t5` |
+| Typeface | Archivo, single family. Hierarchy from size, weight and colour only. Never add a second family                                                                                         |
+| Layout   | Zürich modernist: strict grid, hairline rules, numbered sections in a 2.5rem left column, copy at 58ch, one accent event per screen                                                    |
 
-Token names match the handoff one-to-one, except the handoff's `--black`, which is `--color-ink` here so it does not clobber Tailwind's built-in black.
+Token names match the handoff one-to-one, with two exceptions. The handoff's `--black` is `--color-ink` so it does not clobber Tailwind's built-in black, and its `gold` is `accent`: the palette is under review, and a token named for a colour becomes a lie the moment that colour changes.
 
-Two contrast rules are load-bearing and enforced in the components: gold on paper is ~3:1, so it is **never** used for running text or for type under 18px (`--color-gold-d` covers small type), and marks below 72px drop all ramps for flat gold.
+**Every colour in the repository is stated once**, in the `:root` block at the top of `src/styles/global.css`, as an rgb triplet. A triplet is the only form that can also carry an alpha, which is what lets a keyframe write `rgb(var(--rgb-accent) / 0.35)` and the node field compose an alpha per frame without restating anything. `@theme` turns the triplets into the colours Tailwind generates utilities from.
 
-### Provisional: no logo has been chosen
+Two contexts cannot resolve a CSS custom property: the `theme-color` meta tag, which takes a literal, and the standalone SVGs behind the favicon and the OG image, which have no page to inherit from. Both read the tokens instead of repeating them. `BaseHead.astro` imports the stylesheet a second time with Vite's `?raw` and parses it; `public/favicon.svg` and `public/og.svg` are **generated** from the templates in `scripts/assets/` by `scripts/generate-og.mjs`, which runs on `predev` and `prebuild` and throws if a template names a token that does not exist.
 
-The handoff ships 31 candidates and leaves the wordmark-vs-emblem fork open. Pending that decision the site uses **Family 1 / Direction 1**, lowercase Archivo 800 at `-0.035em` with the tittle enlarged in gold, because it is the wordmark system the handoff recommends, it makes no software claim, and the mark and the gold event are the same object.
+Changing the palette is therefore the ten accent and ramp lines in `global.css`, and nothing else. Verified by swapping the whole family and reverting: the mark, the status dot, the labels, the node field, the favicon and the OG image all followed.
 
-Everything logo-related is contained in three files:
+One contrast rule is load-bearing and enforced in the components. The accent measures **3.9:1** on paper, which passes for large text and fails for normal text, so it is never used for running text or for type below the large-text threshold. `--color-accent-d` is **5.3:1** and covers small type: the eyebrows, the language switcher and the services prefix below `md` all use it.
 
-- [`src/components/Wordmark.astro`](src/components/Wordmark.astro), the mark itself
-- [`public/favicon.svg`](public/favicon.svg), the `f.` monogram tile, one of the open avatar options
-- [`public/og.svg`](public/og.svg), which carries no gold tittle; the build rasteriser has no Archivo, so a dot placed by estimated metrics would land off the stem
+### Draft in review, not final
 
-Changing direction means editing those, not redesigning the site.
+As of 2026-08-17 the site runs a **draft** identity: a red accent family in place of the handoff's gold, and FAVIENS in capitals with the A and the I in the accent. It has not been through an identity review. The gold palette and the tittle mark it replaced are in git history, and reverting the palette is the ten accent and ramp triplets in `global.css`.
 
-Note on the tittle: the handoff's `bottom: .57em` assumes a box whose bottom edge is the baseline. An inline box bottom sits at the descender, so that value drops the dot into the x-height and onto the letterforms. `Wordmark.astro` uses `.745em` against a `line-height: 1` box, measured against Archivo 800.
+Only the chosen direction is in the tree. The candidates it beat, the sheets they came from and the harness that compared them are deliberately not here: the repository carries what the site uses.
+
+The mark is **FAVIENS in capitals, ink, with the A and the I in the accent**: the two letters that spell AI inside the name, one letter apart, picked out by colour alone. No echo, no rule, no motion, which is what decided it: it needs nothing but the two colours to say what it says. See [`src/components/marks/MarkCapsAi.astro`](src/components/marks/MarkCapsAi.astro).
+
+The capitals are `text-transform`, not typed. The page text stays "faviens", so the site is never quoted back as "FAVIENS".
+
+### The node field
+
+[`src/components/NodeField.astro`](src/components/NodeField.astro) draws the moving background: a mesh of drifting nodes spanning the full width of the page, with hubs that link nearly twice as far as the rest, and signals that travel an existing edge and ripple on arrival. Canvas, no dependencies, ~140 nodes at desktop and a fifth of that on a phone.
+
+Link distance is derived from the spacing the nodes actually end up with (1.4x the mean), not set in pixels, so the mesh is as connected on a phone as on a display. Every node carries a depth that scales its size, speed and opacity. Edges and nodes are batched into six paths by opacity, so a frame is around ten draw calls rather than one per edge.
+
+The three colours come from `--field-edge`, `--field-node` and `--field-signal` in `global.css`, so an accent change moves the field with it. There is no fallback colour in the component: a fallback would be the one place a palette value is written twice.
+
+`BaseLayout` takes `background="off" | "quiet" | "active"` and defaults to `quiet`; the legal pages pass `off`. Under `prefers-reduced-motion` it paints one static frame and never starts the loop, and it stops entirely when the tab is hidden or it scrolls out of view.
 
 ### Still open
 

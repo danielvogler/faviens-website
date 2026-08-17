@@ -30,24 +30,24 @@ const yearRange = currentYear > FOUNDED ? `${FOUNDED}–${currentYear}` : `${FOU
   <div
     class="mx-auto max-w-(--container-content) px-6 md:px-10 py-14 grid gap-10 md:grid-cols-3 text-sm text-grey"
   >
-    <div class="space-y-3">
-      <p class="lockup text-ink">{strings.footer.pronunciationLabel}</p>
+    <div class="space-y-3 border-t border-hair pt-5">
+      <p class="lockup text-accent-d">{strings.footer.pronunciationLabel}</p>
       <p>
         {strings.footer.pronunciation}
         <span class="text-ink/50">{strings.footer.pronunciationIpa}</span>
       </p>
     </div>
 
-    <div class="space-y-3">
-      <p class="lockup text-ink">{strings.footer.contact}</p>
+    <div class="space-y-3 border-t border-hair pt-5">
+      <p class="lockup text-accent-d">{strings.footer.contact}</p>
       <p><a href={`mailto:${contactEmail}`} class="link-underline">{contactEmail}</a></p>
       <p>{strings.footer.location}</p>
     </div>
 
     {
       legalLinks.length > 0 && (
-        <div class="space-y-3">
-          <p class="lockup text-ink">{strings.footer.legal}</p>
+        <div class="space-y-3 border-t border-hair pt-5">
+          <p class="lockup text-accent-d">{strings.footer.legal}</p>
           <ul class="space-y-1">
             {legalLinks.map((l) => (
               <li>

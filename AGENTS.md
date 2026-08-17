@@ -136,14 +136,16 @@ the summary. The rules below are the ones that are easy to break by accident.
   built-in black.
 - **One typeface.** Archivo, self-hosted. Hierarchy comes from size, weight and
   colour only. Never add a second family, and never use a serif.
-- **Gold is scarce.** One gold event per screen. Its rarity is what makes it
-  read as intentional. Never combine a symbol, a tittle treatment and a rule in
-  one lockup.
-- **Gold never sets type.** Gold on paper is roughly 3:1. Fine for a large
-  wordmark, failing for body copy. Use `--color-gold-d` below 18px and
-  `--color-ink` or `--color-grey` for anything readable.
-- **Reproduction floor.** Below 72px, drop every gradient and ramp and use flat
-  gold. Thicken strokes as marks shrink rather than scaling a hairline down.
+- **The accent is scarce.** One accent event per screen, and its rarity is what
+  makes it read as intentional. Never combine a symbol, a letter treatment and a
+  rule in one lockup.
+- **The accent never sets type.** It measures 3.9:1 on paper: enough for large
+  text, not enough for normal text. Use `--color-accent-d` at 5.3:1 below the
+  large-text threshold, and `--color-ink` or `--color-grey` for anything that
+  has to be read.
+- **Reproduction floor.** Below 72px, drop every gradient and ramp and use the
+  flat accent. Thicken strokes as marks shrink rather than scaling a hairline
+  down.
 - **Layout is Zurich modernist.** Strict grid, hairline rules, asymmetric
   balance, no ornament. Numbered sections put `01` in a 2.5rem left column with
   the heading beside it and a hairline beneath. Body copy is left-aligned and
@@ -161,23 +163,65 @@ converging on an open node, drawn at the same weight as the section rules. That
 vocabulary is disciplined and on-brand. The ban is on decorative network
 imagery, not on the handoff's own mark family.
 
-### Provisional
+### Colour lives in one place
 
-**No logo has been chosen.** The handoff ships 31 candidates and leaves the
-wordmark-vs-emblem fork open. The site uses Family 1 / Direction 1: lowercase
-Archivo 800 at `-0.035em` with the tittle enlarged in gold. Everything
-logo-related is contained in `src/components/Wordmark.astro`,
-`public/favicon.svg` and `public/og.svg`, so a different direction is an edit
-rather than a redesign.
+Every colour in the repository is stated once, as an rgb triplet, in the `:root`
+block at the top of `src/styles/global.css`. **Do not write a hex value or an rgb
+triplet anywhere else**, including in a component's scoped styles, a keyframe, an
+inline style or an SVG. If a colour is needed that no token covers, add the
+token; if a context cannot resolve a custom property, read the token rather than
+repeating its value:
 
-Two implementation notes that cost an iteration each:
+- `theme-color` in `BaseHead.astro` imports the stylesheet with Vite's `?raw` and
+  parses it through `scripts/tokens.mjs`.
+- `public/favicon.svg` and `public/og.svg` are generated from the templates in
+  `scripts/assets/` by `scripts/generate-og.mjs` on `predev` and `prebuild`. Edit
+  the templates, never the generated files. A template naming an unknown token
+  fails the build rather than shipping an unresolved placeholder.
 
-- The handoff's `bottom: .57em` for the tittle assumes a box whose bottom edge
-  is the baseline. An inline box bottom sits at the descender, so that value
-  drops the dot into the x-height and onto the letterforms. `Wordmark.astro`
-  uses `.745em` against a `line-height: 1` box.
-- The 2.5rem column only works for numerals. A word set in it overruns into the
-  copy beside it.
+The accent family is named `accent`, not `gold`. It was renamed on 2026-08-17,
+while the palette was under review, because `text-gold-d` rendering red is worse
+than any amount of renaming. Names outlive values: do not reintroduce a token
+named for the colour it currently happens to be.
+
+### The node field, an exception granted on 2026-08-17
+
+The maintainer asked for a moving background of gold nodes linking like an
+agentic system chart. That is precisely the decoration the paragraph above rules
+out, so record it as an exception rather than as the ban being lifted:
+`src/components/NodeField.astro`, on at `quiet` everywhere except the legal
+pages, which pass `background="off"`. Nothing else changes. No network imagery
+in illustration, iconography, the OG image or the mark itself. If the identity
+review rejects the field, one prop on `BaseLayout` removes it site-wide.
+
+It is decoration, so it carries decoration's obligations: `aria-hidden`,
+`pointer-events: none`, a single static frame under `prefers-reduced-motion`,
+and no loop while the tab is hidden or the canvas is off screen.
+
+### Draft in review
+
+As of 2026-08-17 the site runs a draft that is **not signed off**: a red accent
+family in place of the handoff's gold, and FAVIENS in capitals with the A and
+the I in the accent (`src/components/marks/MarkCapsAi.astro`). The palette is
+the ten accent and ramp triplets in `src/styles/global.css`, and reverting it is
+that block and nothing else. The gold and the tittle mark it replaced are in git
+history.
+
+Only the chosen direction is in the tree. The candidates it was chosen over, the
+sheets they came from and the harness that compared them are kept outside this
+repository: a site ships what it uses. Do not add a gallery of unused marks
+back.
+
+Two rules the mark depends on:
+
+- The capitals are `text-transform` and never typed literally, or the site gets
+  quoted back as "FAVIENS".
+- The letters are injected as one string rather than mapped in the template. A
+  line break between two letter spans is a text node, and a text node is a
+  space, so a reformat would otherwise render the mark as "F A V I E N S".
+
+One layout note that cost an iteration: the 2.5rem column only works for
+numerals. A word set in it overruns into the copy beside it.
 
 ## Content rules
 

@@ -1,6 +1,12 @@
 ---
 import '~/styles/global.css';
 import { otherLocalePath, type Locale } from '~/i18n';
+// `theme-color` takes a literal and cannot resolve a custom property, and it is
+// the only tag on the site with that problem. Rather than restating the value,
+// the stylesheet is imported a second time as text and the token read out of it
+// at build time, so it cannot drift from the palette.
+import globalCss from '~/styles/global.css?raw';
+import { paletteFrom } from '../../scripts/tokens.mjs';
 
 interface Props {
   title: string;
@@ -13,6 +19,8 @@ const {
   description = 'Faviens. Agentic-AI consulting in Zürich, Switzerland.',
   lang = 'de',
 } = Astro.props;
+
+const palette = paletteFrom(globalCss);
 
 const SITE = import.meta.env.SITE_URL ?? 'https://faviens.com';
 const canonical = new URL(Astro.url.pathname, SITE).toString();
@@ -27,7 +35,7 @@ const enUrl = new URL(enPath, SITE).toString();
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
-<meta name="theme-color" content="#fdfdfb" />
+<meta name="theme-color" content={palette.paper} />
 
 <title>{title}</title>
 <meta name="description" content={description} />
@@ -40,6 +48,7 @@ const enUrl = new URL(enPath, SITE).toString();
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 
 <meta property="og:type" content="website" />
