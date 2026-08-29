@@ -1,0 +1,14 @@
+<!--
+  The single-letter alternative for a square avatar, the same trade
+  favicon-small.svg makes at 16px: one letter in the accent, holding at any size
+  a three-letter mark stops working at.
+
+  It buys legibility and loses the device, since a lone F says nothing about the
+  A and the I. Generated alongside the three-letter mark so the two can be
+  compared at the size they will actually be seen.
+
+  No background rect. See brand-wordmark.svg for why.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <text x="200" y="330" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="400" font-weight="800" text-anchor="middle" fill="{{accent}}">F</text>
+</svg>

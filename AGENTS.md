@@ -117,6 +117,10 @@ src/
   i18n/{de,en,index}.ts typed string tables
   styles/global.css     Tailwind v4 @theme tokens
 scripts/generate-og.mjs prebuild step, renders the SVG sources to PNG via sharp
+scripts/generate-brand.mjs off-site logo files, run by hand with `pnpm brand`
+scripts/generate-signature.mjs the two email footers, `pnpm signature`
+scripts/tight-render.mjs  shared trim-and-fit rasteriser for both of the above
+docs/                   the email footers, generated and tracked
 scripts/verify.mjs      the repository gate, see Definition of done
 .githooks/              pre-commit and commit-msg guards
 .github/workflows/      deploy.yml, verify.yml
@@ -272,6 +276,25 @@ for that one variable.
 Use `||` and not `??` for environment fallbacks. An unset GitHub Actions secret
 expands to an empty string, which is not nullish, so `??` would let the empty
 value through.
+
+## Off-site brand assets
+
+`pnpm brand` writes logo files for LinkedIn and the Google Workspace custom logo
+into `brand/`, which is gitignored: they are binaries, and the repository keeps
+none. Regenerate rather than archive. Sources are `scripts/assets/brand-*.svg`,
+on the same palette tokens as everything else.
+
+`pnpm signature` writes the two email footers into `docs/`, and those are
+tracked, because everyone takes the same ones from the repository:
+
+- `email-footer.txt` is the org-wide append footer, set once by an admin under
+  Gmail's Compliance settings. It cannot be personalised, since that setting
+  takes no per-user variables, and it takes no HTML.
+- `email-signature.html` is the per-person signature, name and role only. The
+  company lines come from the append footer, which every account already gets.
+
+Neither carries a real name. `public/email-logo.png` is the hosted wordmark for
+the append footer's image control, which accepts a public URL and nothing else.
 
 ## Deployment
 

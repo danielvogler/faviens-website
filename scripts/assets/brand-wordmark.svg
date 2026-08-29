@@ -1,0 +1,17 @@
+<!--
+  The wordmark on its own, for off-site profiles: no tagline, no tile, no
+  padding. Colours are placeholders in double braces naming an rgb token in
+  src/styles/global.css, substituted by scripts/generate-brand.mjs.
+
+  It carries no background rect, unlike og.svg and favicon.svg. The rasteriser
+  trims this to the ink and then pads it to whatever the destination asks for,
+  and a rect would defeat the trim: there would be nothing to crop away. The
+  ground is chosen per output instead, because Google Workspace sets the mark on
+  its own white chrome and LinkedIn sets it on both light and dark.
+
+  The viewBox is generous on purpose. It only has to be large enough that no
+  glyph is clipped before the trim measures the real extent.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
+  <text x="60" y="220" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-2.4" fill="{{ink}}">F<tspan fill="{{accent}}">A</tspan>V<tspan fill="{{accent}}">I</tspan>ENS</text>
+</svg>

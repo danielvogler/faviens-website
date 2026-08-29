@@ -1,0 +1,21 @@
+<!--
+  The stacked lockup for a square avatar: the whole name, broken across two
+  lines, with the A and the I both still in the accent.
+
+  It exists because of a constraint the other two square marks cannot get past.
+  FAV is roughly two to one, so in a square frame it letterboxes to a third of
+  the tile empty above and below however small the margin is set, and the single
+  F fills the frame only by giving up the device the mark is built on. Two lines
+  bring the proportion close enough to square that the crop is tight and both
+  accent letters survive.
+
+  The break falls after FAV, which is where the existing icons already cut the
+  word, so the top line is the mark the favicon shows and the second line
+  completes it.
+
+  No background rect. See brand-wordmark.svg for why.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640">
+  <text x="400" y="270" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="260" font-weight="800" text-anchor="middle" letter-spacing="-11" fill="{{ink}}">F<tspan fill="{{accent}}">A</tspan>V</text>
+  <text x="400" y="530" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="260" font-weight="800" text-anchor="middle" letter-spacing="-11" fill="{{ink}}"><tspan fill="{{accent}}">I</tspan>ENS</text>
+</svg>

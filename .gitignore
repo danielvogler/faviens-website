@@ -6,6 +6,7 @@ dist/
 public/og.png
 public/favicon-*.png
 public/apple-touch-icon.png
+public/email-logo.png
 
 # dependencies
 node_modules/
