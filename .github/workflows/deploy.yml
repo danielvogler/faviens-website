@@ -119,7 +119,7 @@ jobs:
           done
 
           retry '/ does not show the wordmark' has_text / faviens
-          retry '/ does not show the contact address' has_text / hello@faviens.com
+          retry '/ does not show the contact address' has_text / info@faviens.com
           retry '/en is not in English' has_text /en 'Coming soon'
 
           rm -f "$page"

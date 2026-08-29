@@ -253,7 +253,21 @@ numerals. A word set in it overruns into the copy beside it.
 
 `SITE_URL` and `CONTACT_EMAIL`, both optional locally (see `.env.example`).
 Production sets `SITE_URL` in `deploy.yml`; `CONTACT_EMAIL` falls back to
-`hello@faviens.com`.
+`COMPANY.email` in `src/data/company.ts`.
+
+The contact address is resolved once, in `src/data/company.ts`, and exported as
+`CONTACT_EMAIL`. Import that wherever an address is rendered; never read
+`import.meta.env.CONTACT_EMAIL` at the point of use and never inline the literal,
+or the fallback drifts between pages. `COMPANY.email` is the fallback value, not
+the value to render.
+
+The origin is resolved once too, by `site` in `astro.config.mjs`. Components read
+it back as `Astro.site`, through `siteOrigin()` in `src/data/site.ts`, which
+throws rather than emitting a relative canonical URL. Never read `SITE_URL` from
+a component: `site` already feeds the sitemap and the canonical tags, and a
+second read is a second fallback. `SITE_URL` is read before the dotenv files are
+loaded, so locally it has to be exported in the shell; `.env.local` is ignored
+for that one variable.
 
 Use `||` and not `??` for environment fallbacks. An unset GitHub Actions secret
 expands to an empty string, which is not nullish, so `??` would let the empty

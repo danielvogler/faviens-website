@@ -88,7 +88,7 @@ See [AGENTS.md](./AGENTS.md) for the full working conventions.
 
 ## Environment
 
-Copy [`.env.example`](.env.example) to `.env.local` for local overrides. Production values are injected by GitHub Actions; the only required runtime variable is `SITE_URL` (set in the workflow). `CONTACT_EMAIL` falls back to `hello@faviens.com` if not set.
+Copy [`.env.example`](.env.example) to `.env.local` for local overrides. Production values are injected by GitHub Actions; the only required runtime variable is `SITE_URL` (set in the workflow). `CONTACT_EMAIL` falls back to the address in [`src/data/company.ts`](src/data/company.ts), which is the one place it is defined.
 
 ## Project layout
 

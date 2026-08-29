@@ -1,5 +1,7 @@
 ---
 import type { Locale } from '~/i18n';
+import { CONTACT_EMAIL } from '~/data/company';
+import { siteOrigin } from '~/data/site';
 
 interface Props {
   lang: Locale;
@@ -7,8 +9,7 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const SITE = import.meta.env.SITE_URL ?? 'https://faviens.com';
-const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
+const SITE = siteOrigin(Astro.site).origin;
 
 // Kept deliberately minimal while the site is a placeholder. Add address,
 // taxID, and sameAs profiles once the full site ships.

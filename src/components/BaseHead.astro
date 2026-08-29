@@ -7,6 +7,7 @@ import { otherLocalePath, type Locale } from '~/i18n';
 // at build time, so it cannot drift from the palette.
 import globalCss from '~/styles/global.css?raw';
 import { paletteFrom } from '../../scripts/tokens.mjs';
+import { siteOrigin } from '~/data/site';
 
 interface Props {
   title: string;
@@ -22,7 +23,7 @@ const {
 
 const palette = paletteFrom(globalCss);
 
-const SITE = import.meta.env.SITE_URL ?? 'https://faviens.com';
+const SITE = siteOrigin(Astro.site);
 const canonical = new URL(Astro.url.pathname, SITE).toString();
 const altLocale: Locale = lang === 'de' ? 'en' : 'de';
 const altPath = otherLocalePath(Astro.url.pathname, lang);

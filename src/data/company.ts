@@ -30,9 +30,18 @@ export const COMPANY = {
     country: 'Schweiz',
     countryCode: 'CH',
   } as CompanyAddress,
-  /** Overridden by the CONTACT_EMAIL environment variable where one is set. */
-  email: 'hello@faviens.com',
+  /** Fallback for {@link CONTACT_EMAIL}. Render that, never this. */
+  email: 'info@faviens.com',
 } as const;
+
+/**
+ * The contact address as rendered, everywhere. The `CONTACT_EMAIL` environment
+ * variable wins where one is set, otherwise the address in `COMPANY`.
+ *
+ * `||` and not `??`: an unset GitHub Actions secret expands to an empty string,
+ * which is not nullish, so `??` would let the empty value through.
+ */
+export const CONTACT_EMAIL: string = import.meta.env.CONTACT_EMAIL || COMPANY.email;
 
 /** Address lines in postal order, skipping anything not yet known. */
 export function addressLines(address: CompanyAddress): string[] {

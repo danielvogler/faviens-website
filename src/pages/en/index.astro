@@ -3,11 +3,10 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Hero from '~/components/Hero.astro';
 import ContactCTA from '~/components/ContactCTA.astro';
 import { t } from '~/i18n';
+import { CONTACT_EMAIL } from '~/data/company';
 
 const lang = 'en' as const;
 const strings = t(lang);
-
-const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || 'hello@faviens.com';
 ---
 
 <BaseLayout

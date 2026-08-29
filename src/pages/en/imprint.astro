@@ -3,12 +3,11 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import LegalPage from '~/components/LegalPage.astro';
 import Section from '~/components/Section.astro';
 import { t } from '~/i18n';
-import { COMPANY, addressLines } from '~/data/company';
+import { COMPANY, CONTACT_EMAIL, addressLines } from '~/data/company';
 
 const lang = 'en' as const;
 const s = t(lang).pages.imprint;
 
-const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || COMPANY.email;
 const lines = addressLines(COMPANY.address);
 const legalName = [COMPANY.name, COMPANY.legalForm].filter(Boolean).join(' ');
 ---
