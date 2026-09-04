@@ -40,3 +40,8 @@ brand/
 
 # local-only working notes and open decisions
 TODOS.md
+
+# design handoffs and source material, dropped in by hand. They are binaries and
+# archives, and the repository keeps none: the knowledge from them belongs in
+# src/lib/, scripts/assets/ and AGENTS.md, not in a tracked zip.
+notes/

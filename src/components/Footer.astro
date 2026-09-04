@@ -1,4 +1,5 @@
 ---
+import MarkGlobe from '~/components/marks/MarkGlobe.astro';
 import { t, type Locale } from '~/i18n';
 
 interface FooterLink {
@@ -48,9 +49,18 @@ const yearRange = currentYear > FOUNDED ? `${FOUNDED}–${currentYear}` : `${FOU
       legalLinks.length > 0 && (
         <div class="space-y-3 border-t border-hair pt-5">
           <p class="lockup text-accent-d">{strings.footer.legal}</p>
-          <ul class="space-y-1">
+          {/*
+            The list marker is the mark, at the `dot` band. Tailwind's preflight
+            leaves a list unmarked, so this list read as three loose lines; a
+            CSS `list-style-image` would have taken a second copy of the artwork
+            as a data URI and put a colour back into a component, which the
+            palette rule forbids. An element in the row is the marker, and it is
+            aria-hidden, because the list already announces itself as a list.
+          */}
+          <ul class="legal space-y-1.5">
             {legalLinks.map((l) => (
-              <li>
+              <li class="flex items-baseline gap-2.5">
+                <MarkGlobe variant="dot" class="marker" />
                 <a href={l.href} class="link-underline">
                   {l.label}
                 </a>
@@ -66,3 +76,19 @@ const yearRange = currentYear > FOUNDED ? `${FOUNDED}–${currentYear}` : `${FOU
     © {yearRange} Faviens. {strings.footer.rights}
   </div>
 </footer>
+
+<style>
+  /* `:global` under a scoped ancestor: Astro's scope attribute lands on this
+     file's own elements, not on an `img` that MarkGlobe rendered, so a bare
+     `.marker` would match nothing. `items-baseline` puts the marker's bottom
+     edge on the text baseline, and the nudge lifts it onto the x-height. */
+  .legal :global(.marker) {
+    --globe-size: 1rem;
+    /* `align-items: baseline` puts the marker's bottom edge on the text
+       baseline; this lifts its centre onto the cap midline, the same rule
+       MarkGlobe applies inline. */
+    position: relative;
+    top: calc(var(--globe-size) / 2 - var(--globe-cap) / 2);
+    flex: none;
+  }
+</style>

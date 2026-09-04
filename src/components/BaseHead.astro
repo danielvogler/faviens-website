@@ -46,9 +46,22 @@ const enUrl = new URL(enPath, SITE).toString();
 <link rel="alternate" hreflang="en" href={enUrl} />
 <link rel="alternate" hreflang="x-default" href={deUrl} />
 
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<!--
+  Rasters only, deliberately, and no SVG icon.
+
+  A browser offered an SVG favicon prefers it over every PNG and then rasterises
+  it itself, at a size and with a filter we do not control. The mark is sixty
+  hairline strands, which is exactly the artwork that survives that badly: the
+  32px PNG here is drawn with the strokes inked up for the raster and reads as
+  the wound ball, while the same file left to the browser can come out a soft
+  disc. Handing over finished pixels is the only way to know what the tab shows.
+
+  16px is not offered either. Nothing legible as this mark exists at 16px, and
+  offering a reduced eight-strand drawing there put a different mark in the tab
+  from the one in the header. A browser that wants 16 downsamples the 32, which
+  is a supersampled version of the real thing and better than either.
+-->
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
-<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
 <link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 

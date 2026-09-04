@@ -1,0 +1,194 @@
+---
+/*
+ * The wordmark: FAV, a red bar standing in for the I, then ENS.
+ *
+ * Capitals set in ink, and the bar is the only accent event. It evokes a
+ * terminal cursor, and putting the mark's colour inside the word is what makes
+ * the lockup read as one object rather than a red circle sitting on top of an
+ * unrelated black word.
+ *
+ * The A is no longer accented. The site's earlier mark picked out the A and the
+ * I as the AI hidden in the name, and that worked while the wordmark stood
+ * alone. The brand package tried the same doubling and rejected it, because the
+ * V sits between the two letters and the pair reads as two unrelated highlights
+ * rather than as a pair; with the globe beside it there would be three accent
+ * events in one lockup. The old mark is in git history.
+ *
+ * Every number below comes from the brand package's spec, in units of the I's
+ * stem width and the cap height, and both of those are measured out of a
+ * browser rather than taken from the spec's font units: the spec's 1760 cap is
+ * against an em the site never sees.
+ *
+ *   bar width     0.42 x stem   0.46 is the agreed ceiling. Below about 0.36 it
+ *                               stops reading as a letter; above 0.46 it is an
+ *                               ordinary condensed I and the device disappears.
+ *   height        1.34 x cap    exactly the circle's diameter
+ *   centre        the cap midline, which is the circle's centre too
+ *   side bearings 0.9 x stem x 1.15 each side, because a thin rule needs more
+ *                               air around it than a stem does
+ *
+ * Three rules the mark depends on:
+ *
+ * The capitals are `text-transform`, not typed. The page text stays "faviens",
+ * so a crawler, a screen reader and anyone copying the name out of the page get
+ * the name rather than the styling. Typed as literal capitals the site would be
+ * quoted as "FAVIENS" everywhere, which is a different name.
+ *
+ * The i is still in the text. It is visually hidden and the bar is drawn beside
+ * it, rather than the letter being deleted: a wordmark that renders as a bar
+ * and extracts as "favens" is a misspelling everywhere the page is quoted.
+ *
+ * The letters are built as a string and injected rather than mapped in the
+ * template: a line break between two letter spans is a text node, and a text
+ * node is a space, so a reformat could otherwise turn the mark into
+ * "F A V I E N S". The content is the fixed array below, so there is nothing to
+ * escape. `:global()` reaches the injected spans, which carry no scoping
+ * attribute of their own.
+ */
+import { CAP, STEM } from '~/lib/type.mjs';
+import { DIAMETER_CAPS, INK_RATIO } from '~/lib/globe.mjs';
+
+interface Props {
+  /** Sets the mark's size. */
+  class?: string;
+  /**
+   * Ink only. The bar is the whole accent here, so this reduces the mark to a
+   * wordmark with nothing said, for one-accent-event compositions and for
+   * grounds the accent cannot survive.
+   */
+  mono?: boolean;
+}
+
+const { class: className = '', mono = false } = Astro.props;
+
+const BAR_FRAC = 0.42; // bar width as a fraction of the stem
+/*
+ * The bar is centred on the cap midline, so it rises and drops by the same
+ * amount and its centre is the circle's centre. That is a deliberate departure
+ * from the brand package, which has it rise 0.12 and drop 0.22 in imitation of
+ * a real pipe glyph's overshoot. A real pipe does do that, and on its own the
+ * bar looks right; beside the circle it does not, because the circle IS centred
+ * on the cap midline and the two then disagree by a twentieth of a cap. One of
+ * them had to move, and the circle's placement is the one the package argues
+ * for at length. Height is unchanged, so the bar is still exactly as tall as
+ * the circle is wide.
+ */
+
+const BAR_GAP = 1.15; // side bearing multiplier
+/** The wordmark's own tracking, which CSS applies after the bar and the
+ *  reference build does not. Cancelled on the bar's right margin. */
+const TRACK = 0.012;
+
+const barWidth = STEM * BAR_FRAC;
+/*
+ * The bar is exactly as tall as the circle is wide, and it is the circle's
+ * DRAWN width that has to match, not its nominal one: the two sit side by side
+ * and the eye compares ink to ink. Without the ink ratio the bar comes out 3%
+ * short, which is small enough to look like a mistake rather than a decision.
+ */
+const barHeight = CAP * DIAMETER_CAPS * INK_RATIO;
+/* Centred on the cap midline, which is where the circle is centred too. */
+const barDrop = barHeight / 2 - CAP / 2;
+const barAdvance = barWidth + STEM * 0.9 * BAR_GAP;
+const barSide = (barAdvance - barWidth) / 2;
+
+const em = (value: number) => `${value.toFixed(4)}em`;
+/** Bare numbers for the SVG's own coordinate space, which carries no units. */
+const unit = (value: number) => value.toFixed(5);
+
+/*
+ * The bar is an SVG rect, not a coloured box, and that is a correctness fix
+ * rather than a preference.
+ *
+ * A background colour on an inline-block is painted onto whole device pixels,
+ * so the bar's width is rounded: measured, it comes out at exactly 3, 5, 10 and
+ * 21 device pixels at the four sizes and densities the site uses, against the
+ * 2.3, 4.5, 10.2 and 20.5 it asks for. In the hero that is under 1% and
+ * invisible; in the header it is 8% on a retina screen and 30% without one, and
+ * the two marks on the same page then disagree about how thick the bar is. An
+ * SVG shape is antialiased instead, so its edges land at their true sub-pixel
+ * positions and the proportion holds at every size.
+ *
+ * `preserveAspectRatio="none"` because the bar is deliberately not square and
+ * the box it is drawn into is already the right shape.
+ *
+ * The i is wrapped rather than replaced, so it stays in the text layer, and the
+ * bar carries the advance width the letter used to.
+ */
+const bar =
+  `<svg class="bar" viewBox="0 0 ${unit(barAdvance)} ${unit(barHeight)}" ` +
+  `preserveAspectRatio="none" aria-hidden="true" focusable="false">` +
+  `<rect x="${unit(barSide)}" y="0" width="${unit(barWidth)}" height="${unit(barHeight)}"/>` +
+  `</svg>`;
+
+const LETTERS = ['f', 'a', 'v', 'i', 'e', 'n', 's'];
+const letters = LETTERS.map((letter) =>
+  letter === 'i' ? `<span class="letter-i">i</span>${bar}` : letter,
+).join('');
+---
+
+<span
+  class:list={['mark-wordmark', mono && 'mono', className]}
+  style={`--bar-advance: ${em(barAdvance)}; --bar-height: ${em(barHeight)}; --bar-drop: ${em(barDrop)}; --bar-track: ${em(TRACK)}`}
+  set:html={letters}
+/>
+
+<style>
+  .mark-wordmark {
+    display: inline-block;
+    font-weight: 800;
+    /* Capitals are optically larger and need less negative tracking than the
+       lowercase this replaced to stay open. */
+    letter-spacing: -0.012em;
+    line-height: 1;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  /*
+   * `vertical-align` on an inline-block puts its bottom margin edge that far
+   * from the baseline, so one value places the whole bar: the bottom lands 0.22
+   * of a cap below the baseline and the height carries the top to 0.12 above
+   * the caps. Positioning it absolutely instead would measure from the inline
+   * box's edge, which is not the baseline and moves with the line height.
+   */
+  .mark-wordmark :global(.bar) {
+    display: inline-block;
+    /* The box is the bar's full advance, bearings included, so the SVG carries
+       its own side air and no margin has to restate it. */
+    width: var(--bar-advance);
+    height: var(--bar-height);
+    /* The tracking CSS adds after every character and the reference build does
+       not add after the bar. */
+    margin-right: var(--bar-track);
+    vertical-align: calc(-1 * var(--bar-drop));
+    fill: var(--color-accent);
+  }
+
+  /*
+   * Visually hidden, not removed. It keeps the name spelled correctly in the
+   * text layer while the bar carries the advance width in the layout.
+   */
+  .mark-wordmark :global(.letter-i) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mark-wordmark.mono :global(.bar) {
+    fill: currentcolor;
+  }
+
+  /*
+   * On a dark ground the ink letters have to invert, and the accent holds: it
+   * measures 4.8:1 against the ink, which is the one place this palette is
+   * stronger than the gold it replaced.
+   */
+  :global([data-ground='ink']) .mark-wordmark {
+    color: var(--color-paper);
+  }
+</style>

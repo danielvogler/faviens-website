@@ -1,0 +1,10 @@
+<!--
+  The mark on its own, for a square avatar. The whole file is the generated
+  globe, normalised into a 100 x 100 box by scripts/template.mjs.
+
+  No F inside it, and no letters. The site has no monogram, so adding one here
+  would put a device off-site that the page it points at does not have.
+
+  No background rect. See brand-wordmark.svg for why.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{{globe:full}}</svg>

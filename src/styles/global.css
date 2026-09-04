@@ -84,15 +84,19 @@
 }
 
 /*
- * The node field's three colours, named for the role each one plays rather than
- * for the token it currently points at, so the field can be re-pointed without
- * touching the canvas. They stay triplets because the canvas composes an alpha
- * onto each one per edge, per node and per frame.
+ * The background globe's three depth layers, named for the role each one plays
+ * rather than for the token it currently points at, so the field can be
+ * re-pointed without touching the canvas. They stay triplets because the canvas
+ * composes an alpha onto each one per layer and per frame.
+ *
+ * They step up the ramp rather than all pointing at the accent: the far side of
+ * the sphere is what makes it read as a sphere, and at the field's opacity a
+ * single colour flattens it into a scribble.
  */
 :root {
-  --field-edge: var(--rgb-t1); /* the mesh */
-  --field-node: var(--rgb-accent); /* the nodes */
-  --field-signal: var(--rgb-accent-l); /* traffic */
+  --globe-back: var(--rgb-t1); /* the far side */
+  --globe-mid: var(--rgb-t3); /* the flanks */
+  --globe-front: var(--rgb-accent); /* the near side */
 }
 
 html {

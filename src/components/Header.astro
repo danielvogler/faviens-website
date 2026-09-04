@@ -1,5 +1,5 @@
 ---
-import MarkCapsAi from '~/components/marks/MarkCapsAi.astro';
+import MarkLockup from '~/components/marks/MarkLockup.astro';
 import { getHomeHref, type Locale } from '~/i18n';
 
 interface NavLink {
@@ -19,12 +19,16 @@ const homeHref = getHomeHref(lang);
 ---
 
 <!--
-  The header mark is the full mark, echo and pulse included, so the two wordmarks
-  on the screen are the same object. That is a deliberate departure from the
-  handoff's one-accent-event-per-screen rule (§6): the identity is the doubling,
-  and a header that drops it reads as a different logo, which is what it looked
-  like. Both marks animate from page load with the same duration, so they pulse
-  together rather than beating against each other.
+  The header mark is the full lockup, globe included, so the two logos on the
+  screen are the same object. That is a deliberate departure from the handoff's
+  one-accent-event-per-screen rule (§6): the identity is the doubling, and a
+  header that drops half of it reads as a different logo.
+
+  The mark is the real one, all sixty strands, and the wordmark is set at 30px
+  so that it can be. The globe is 0.948 of the type, so 30px is what puts it at
+  28px, which is the size the strands start reading at. At the 20px this header
+  used to be, the globe was 19px and the only options were a soft pink disc or a
+  coarse eight-strand scribble, neither of which is the logo.
 
   Hairline, not shadow, separates the header once scrolled.
 -->
@@ -36,7 +40,7 @@ const homeHref = getHomeHref(lang);
     class="mx-auto max-w-(--container-content) px-6 md:px-10 py-6 flex items-center justify-between"
   >
     <a href={homeHref} class="hover:text-accent-d transition-colors" aria-label="faviens, home">
-      <MarkCapsAi class="text-xl" />
+      <MarkLockup class="text-[1.875rem]" variant="full" />
     </a>
 
     {

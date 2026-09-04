@@ -1,0 +1,82 @@
+---
+/*
+ * The horizontal lockup: the empty globe on the left, the wordmark on the
+ * right. This is the site's logo.
+ *
+ * The three numbers come from the brand package's spec and are stated in cap
+ * heights, which is why they are `em` here against Archivo's cap. That cap is
+ * 0.687em, measured out of the browser rather than taken from the spec: the
+ * spec's 1760 is in the font's own units against an em the site never sees, and
+ * assuming 0.88 from it puts the globe a fifth too large.
+ *
+ *   diameter        1.34 cap    the same height as the wordmark's bar, which
+ *                               is where the two halves of the lockup lock
+ *   gap             0.35 cap
+ *   vertical centre on the CAP MIDLINE, cap/2 above the baseline
+ *
+ * The last is the one that is easy to get wrong and the reason this is a
+ * component rather than a flex row with `items-center`. Centred on the type's
+ * own box the circle reads as hanging, because the box is taller below the
+ * baseline than above the caps. Aligning on the baseline and then lifting the
+ * globe by half its own height minus half a cap puts its centre exactly on the
+ * cap midline, which is what makes the two read as one object.
+ *
+ * `INK_RATIO` is the drawn extent against the nominal diameter. The globe's ink runs
+ * slightly wider than its nominal 176 units, because the wobble pushes strands
+ * past the circle and the round caps add half a stroke on top, and the mark
+ * files are cropped to the ink. The spec's numbers are all nominal, so the
+ * diameter scales up by it and the gap comes down by half the overhang: a gap
+ * measured from the ink edge starts where the nominal box has already ended.
+ */
+import MarkWordmark from '~/components/marks/MarkWordmark.astro';
+import { CAP } from '~/lib/type.mjs';
+import { DIAMETER_CAPS, INK_RATIO } from '~/lib/globe.mjs';
+import MarkGlobe from '~/components/marks/MarkGlobe.astro';
+
+interface Props {
+  /** Sets the wordmark's size; the globe follows from it. */
+  class?: string;
+  /** Size band for the globe. See VARIANTS in src/lib/globe.mjs. */
+  variant?: 'dot' | 'full';
+  /**
+   * A floor under the globe's size, for a wordmark that clamps down small
+   * enough to cross out of its variant's band on a phone.
+   */
+  minSize?: string;
+}
+
+const { class: className = '', variant = 'full', minSize } = Astro.props;
+
+const GAP = 0.35; // circle to wordmark, in cap heights
+
+const size = `${(DIAMETER_CAPS * INK_RATIO * CAP).toFixed(4)}em`;
+const gap = `${((GAP - ((INK_RATIO - 1) / 2) * DIAMETER_CAPS) * CAP).toFixed(4)}em`;
+---
+
+<span
+  class:list={['mark-lockup', className]}
+  style={`--globe-size: ${minSize ? `max(${minSize}, ${size})` : size}; --globe-gap: ${gap}; --globe-cap: ${CAP}em`}
+>
+  <MarkGlobe variant={variant} />
+  <MarkWordmark />
+</span>
+
+<style>
+  .mark-lockup {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--globe-gap);
+    white-space: nowrap;
+  }
+
+  /*
+   * A replaced element's baseline in a flex row is its bottom edge, so the
+   * globe starts sitting on the type's baseline. Pushing it down by half its
+   * own height and back up by half a cap lands its centre on the cap midline.
+   */
+  .mark-lockup :global(.mark-globe) {
+    position: relative;
+    top: calc(var(--globe-size) / 2 - var(--globe-cap) / 2);
+    flex: none;
+  }
+</style>

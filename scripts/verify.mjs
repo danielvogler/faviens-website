@@ -100,6 +100,24 @@ check('build', () => {
   }
 });
 
+check('globe matches the logo', () => {
+  // The mark is generated from src/lib/globe.mjs rather than pasted in, because
+  // the background field has to turn the sphere and a flattened SVG has no
+  // depth left to turn. That is only safe while the generator's output at rest
+  // is the brand package's artwork of record, and this is what makes a drift a
+  // build failure rather than a card that disagrees with the website.
+  try {
+    execSync('node scripts/check-globe.mjs', { cwd: ROOT, stdio: 'pipe' });
+    return {};
+  } catch (error) {
+    const out = `${error.stdout ?? ''}${error.stderr ?? ''}`.trim().split('\n');
+    return {
+      failures: out,
+      hint: 'regenerate the logo from the brand package first, then update the digest',
+    };
+  }
+});
+
 check('formatting', () => {
   try {
     execSync('npx prettier --check .', { cwd: ROOT, stdio: 'pipe' });

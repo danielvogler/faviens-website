@@ -93,16 +93,18 @@ Copy [`.env.example`](.env.example) to `.env.local` for local overrides. Product
 ## Project layout
 
 ```
-public/               static assets (favicon.svg, og.svg, robots, llms.txt, CNAME)
+public/               static assets (mark.svg, mark-dot.svg, robots, llms.txt, CNAME)
 src/
   pages/              .astro routes (DE at /, EN at /en/)
   layouts/            BaseLayout
-  components/         Hero, Header, Footer, ContactCTA, NodeField, ...
-  components/marks/   MarkCapsAi, the wordmark
+  components/         Hero, Header, Footer, ContactCTA, GlobeField, ...
+  components/marks/   MarkGlobe, MarkWordmark, MarkLockup
+  lib/globe.mjs       the mark's geometry (mt19937.mjs under it)
   i18n/               typed string tables (de.ts, en.ts)
   styles/global.css   Tailwind v4 @theme tokens
 scripts/              build-time helpers (raster asset generation via sharp)
 scripts/assets/       token-templated SVG sources for the icons and OG image
+scripts/check-globe.mjs  asserts the generated mark against the artwork of record
 .github/workflows/    CI definition
 ```
 
@@ -120,31 +122,47 @@ Source: **Faviens Design Handoff, 2026-08-08**.
 
 Token names match the handoff one-to-one, with two exceptions. The handoff's `--black` is `--color-ink` so it does not clobber Tailwind's built-in black, and its `gold` is `accent`: the palette is under review, and a token named for a colour becomes a lie the moment that colour changes.
 
-**Every colour in the repository is stated once**, in the `:root` block at the top of `src/styles/global.css`, as an rgb triplet. A triplet is the only form that can also carry an alpha, which is what lets a keyframe write `rgb(var(--rgb-accent) / 0.35)` and the node field compose an alpha per frame without restating anything. `@theme` turns the triplets into the colours Tailwind generates utilities from.
+**Every colour in the repository is stated once**, in the `:root` block at the top of `src/styles/global.css`, as an rgb triplet. A triplet is the only form that can also carry an alpha, which is what lets a keyframe write `rgb(var(--rgb-accent) / 0.35)` and the globe field compose an alpha per depth layer per frame without restating anything. `@theme` turns the triplets into the colours Tailwind generates utilities from.
 
-Two contexts cannot resolve a CSS custom property: the `theme-color` meta tag, which takes a literal, and the standalone SVGs behind the favicon and the OG image, which have no page to inherit from. Both read the tokens instead of repeating them. `BaseHead.astro` imports the stylesheet a second time with Vite's `?raw` and parses it; `public/favicon.svg` and `public/og.svg` are **generated** from the templates in `scripts/assets/` by `scripts/generate-og.mjs`, which runs on `predev` and `prebuild` and throws if a template names a token that does not exist.
+Two contexts cannot resolve a CSS custom property: the `theme-color` meta tag, which takes a literal, and the standalone SVGs behind the icons and the link preview, which have no page to inherit from. Both read the tokens instead of repeating them. `BaseHead.astro` imports the stylesheet a second time with Vite's `?raw` and parses it; the marks, icons and link preview are **generated** from `src/lib/globe.mjs` and the templates in `scripts/assets/` by `scripts/generate-og.mjs`, which runs on `predev` and `prebuild` and throws if a template names a token or a mark variant that does not exist.
 
-Changing the palette is therefore the ten accent and ramp lines in `global.css`, and nothing else. Verified by swapping the whole family and reverting: the mark, the status dot, the labels, the node field, the favicon and the OG image all followed.
+Changing the palette is therefore the ten accent and ramp lines in `global.css`, and nothing else. Verified by swapping the whole family and reverting: the mark, the status marker, the labels, the globe field, the favicon and the OG image all followed.
 
 One contrast rule is load-bearing and enforced in the components. The accent measures **3.9:1** on paper, which passes for large text and fails for normal text, so it is never used for running text or for type below the large-text threshold. `--color-accent-d` is **5.3:1** and covers small type: the eyebrows, the language switcher and the services prefix below `md` all use it.
 
 ### Draft in review, not final
 
-As of 2026-08-17 the site runs a **draft** identity: a red accent family in place of the handoff's gold, and FAVIENS in capitals with the A and the I in the accent. It has not been through an identity review. The gold palette and the tittle mark it replaced are in git history, and reverting the palette is the ten accent and ramp triplets in `global.css`.
+As of 2026-08-17 the site runs a **draft** identity: a red accent family in place of the handoff's gold, and FAVIENS in capitals with the A and the I in the accent. The globe joined it on 2026-09-04, from a brand package delivered outside this repository. Neither has been through an identity review. The gold palette and the tittle mark it replaced are in git history, and reverting the palette is the ten accent and ramp triplets in `global.css`.
 
 Only the chosen direction is in the tree. The candidates it beat, the sheets they came from and the harness that compared them are deliberately not here: the repository carries what the site uses.
 
-The mark is **FAVIENS in capitals, ink, with the A and the I in the accent**: the two letters that spell AI inside the name, one letter apart, picked out by colour alone. No echo, no rule, no motion, which is what decided it: it needs nothing but the two colours to say what it says. See [`src/components/marks/MarkCapsAi.astro`](src/components/marks/MarkCapsAi.astro).
+The logo is the **horizontal lockup**: a wound-string globe on the left, the wordmark on the right. The wordmark is **FAV, a red bar, ENS**, capitals set in ink with the bar standing in for the I as the mark's only accent event. See [`MarkLockup.astro`](src/components/marks/MarkLockup.astro), [`MarkGlobe.astro`](src/components/marks/MarkGlobe.astro) and [`MarkWordmark.astro`](src/components/marks/MarkWordmark.astro).
 
-The capitals are `text-transform`, not typed. The page text stays "faviens", so the site is never quoted back as "FAVIENS".
+The capitals are `text-transform`, not typed, and the `i` is still in the text behind the bar. The page text stays "faviens", so the site is never quoted back as "FAVIENS" or, worse, as "favens".
 
-### The node field
+### The globe
 
-[`src/components/NodeField.astro`](src/components/NodeField.astro) draws the moving background: a mesh of drifting nodes spanning the full width of the page, with hubs that link nearly twice as far as the rest, and signals that travel an existing edge and ripple on arrival. Canvas, no dependencies, ~140 nodes at desktop and a fifth of that on a phone.
+Sixty strands, each a real circle lying on a sphere and projected orthographically. The crossings, the bunching at the silhouette and the roundness fall out of the 3D geometry; 2D noise does not give the same silhouette.
 
-Link distance is derived from the spacing the nodes actually end up with (1.4x the mean), not set in pixels, so the mesh is as connected on a phone as on a display. Every node carries a depth that scales its size, speed and opacity. Edges and nodes are batched into six paths by opacity, so a frame is around ten draw calls rather than one per edge.
+It is generated rather than pasted in, by [`src/lib/globe.mjs`](src/lib/globe.mjs), because the background has to turn the sphere and a flattened SVG has no depth left to turn. [`src/lib/mt19937.mjs`](src/lib/mt19937.mjs) reproduces CPython's Mersenne Twister exactly, so seed 7714 draws the same sixty strands here as it did in the brand package's Python build: `scripts/check-globe.mjs` digests the output and compares it against the committed `faviens-circle.svg`, which it matches byte for byte. `pnpm verify` runs that check, and the committed artwork wins over the generator.
 
-The three colours come from `--field-edge`, `--field-node` and `--field-signal` in `global.css`, so an accent change moves the field with it. There is no fallback colour in the component: a fallback would be the one place a palette value is written twice.
+The real mark holds down to about **28px**. Below that the strands fall under a pixel and it rasterises as a soft disc, so there are two drawings: `full` wherever the mark is a logo, which is everywhere above 28px including the favicon from 32px up, and `dot` (the first eight strands of the same sequence, thicker-stroked and on the flat accent) for the 13 to 20px band where bullets live. That floor is why the header wordmark is set at 30px, which is what puts the globe beside it at 28px. `public/mark.svg` and `mark-dot.svg` are the two, written at `predev` and `prebuild`.
+
+The wordmark is **FAV, a red bar, ENS**: the bar stands in for the I at 0.42 of its stem width and is the mark's only accent event. The `i` stays in the text, visually hidden, so the name still extracts and reads as "faviens". The bar is an SVG rect rather than a coloured box, because a background colour is painted onto whole device pixels and the bar's width came out 8% over in the header and under 1% in the hero, which is visible when both are on screen.
+
+Icons are PNGs and there is deliberately no SVG favicon: a browser offered one prefers it and then rasterises sixty hairline strands however it likes, which comes out a soft disc. The 32 and 48px icons are drawn here with the strokes inked up for the raster; 180 and 512 use the logo untouched. There is no 16px icon, because nothing legible as this mark exists at 16px.
+
+The lockup's numbers are the brand package's: diameter 1.34 cap heights, gap 0.35, circle centred on the **cap midline** and not on the type's box, which is what stops it reading as hanging. The bar is centred on that same line and is exactly as tall as the circle is wide, which is a deliberate departure: the package gives the bar a real pipe glyph's asymmetric overshoot, and beside the circle the two then disagree. Archivo 800's cap is 0.68709em and its I stem 0.179469em, both measured in a browser and stated once in `src/lib/type.mjs`.
+
+### The globe field
+
+[`src/components/GlobeField.astro`](src/components/GlobeField.astro) draws the moving background: the same mark, a little larger than the viewport's shorter side, turning once every 150 seconds. Canvas, no dependencies. It replaces the node field, which was an exception to the ban on network decoration; the background is now the identity itself, so the exception is gone and the ban stands as written.
+
+Two modes. `draw` lays the strands down one after another as the sphere turns and then keeps turning, so the mark builds itself once per visit; `rotate` is already turning when the page opens. `draw` is the default, and `BaseLayout` takes `backgroundMode` to switch it.
+
+The projection is recomputed every frame rather than an image being spun: the strands cross differently at every angle, which is what a real sphere does and what the eye reads as one. Strands are batched into three paths by depth, so a frame is three strokes. A radial mask holds the field back over the band the lockup and the lead sit in, at 0.45 rather than 0, because a hole punched in the sphere reads worse than the crossings did.
+
+The three depth colours come from `--globe-back`, `--globe-mid` and `--globe-front` in `global.css`, so an accent change moves the field with it. There is no fallback colour in the component: a fallback would be the one place a palette value is written twice.
 
 `BaseLayout` takes `background="off" | "quiet" | "active"` and defaults to `quiet`; the legal pages pass `off`. Under `prefers-reduced-motion` it paints one static frame and never starts the loop, and it stops entirely when the tab is hidden or it scrolls out of view.
 
