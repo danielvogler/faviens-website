@@ -8,8 +8,6 @@
  * Draw large, crop to the ink, scale into the margin box, centre on the exact
  * canvas the destination requires.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import sharp from 'sharp';
 
 /** Rendered at this multiple of the target, then trimmed and scaled down, so the
@@ -25,26 +23,6 @@ export function hexToRgb(hex) {
 }
 
 /**
- * Substitutes `{{token}}` for the palette value of that token. An unknown token
- * throws rather than being left in the output: a `{{accent}}` that silently
- * survives into a rasterised PNG is a black rectangle nobody notices until the
- * image is already out in the world.
- */
-export async function resolveSource(sourceDir, file, palette) {
-  const template = await readFile(join(sourceDir, file), 'utf8');
-  return template.replace(/\{\{([a-z0-9-]+)\}\}/g, (_, token) => {
-    const value = palette[token];
-    if (!value) {
-      throw new Error(
-        `${file} references {{${token}}}, which is not a --rgb-* token in src/styles/global.css. ` +
-          `Known tokens: ${Object.keys(palette).join(', ')}`,
-      );
-    }
-    return value;
-  });
-}
-
-/**
  * @param svg resolved SVG source, with no background rect of its own
  * @param width target width in pixels
  * @param height target height in pixels
@@ -55,7 +33,24 @@ export async function renderTight(svg, { width, height, ground, margin }) {
   const trimmed = await sharp(Buffer.from(svg), { density: 72 * SUPERSAMPLE })
     .trim({ threshold: 1 })
     .toBuffer();
+  return fitInto(trimmed, { width, height, ground, margin });
+}
 
+/**
+ * Scales an already-trimmed image into the margin box and centres it on the
+ * exact canvas the destination requires.
+ *
+ * Split out from `renderTight` because the lockups arrive already composed and
+ * already trimmed, and running them through a second trim would crop away the
+ * transparent margin that keeps the two parts apart.
+ *
+ * @param trimmed a PNG cropped to its ink
+ * @param width target width in pixels
+ * @param height target height in pixels
+ * @param ground hex colour to sit the mark on, or null to leave it transparent
+ * @param margin share of the shorter side left empty on each edge
+ */
+export async function fitInto(trimmed, { width, height, ground, margin }) {
   const inset = Math.round(Math.min(width, height) * margin);
   const box = { width: width - inset * 2, height: height - inset * 2 };
   if (box.width <= 0 || box.height <= 0) {

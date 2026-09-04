@@ -4,7 +4,7 @@ import Schema from '~/components/Schema.astro';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
 import LanguageSwitcher from '~/components/LanguageSwitcher.astro';
-import NodeField from '~/components/NodeField.astro';
+import GlobeField from '~/components/GlobeField.astro';
 import { getLegalLinks, t, type Locale } from '~/i18n';
 import { CONTACT_EMAIL } from '~/data/company';
 
@@ -13,14 +13,25 @@ interface Props {
   description?: string;
   lang?: Locale;
   /**
-   * The node field behind the page. `quiet` everywhere by default; the legal
+   * The turning globe behind the page. `quiet` everywhere by default; the legal
    * pages pass `off`, since a page of running text does not need atmosphere
-   * behind it and the field would compete with the measure.
+   * behind it and the globe would compete with the measure.
    */
   background?: 'off' | 'quiet' | 'active';
+  /**
+   * `draw` lays the strands down once on arrival and then turns; `rotate` is
+   * already turning when the page opens.
+   */
+  backgroundMode?: 'rotate' | 'draw';
 }
 
-const { title, description, lang = 'de', background = 'quiet' } = Astro.props;
+const {
+  title,
+  description,
+  lang = 'de',
+  background = 'quiet',
+  backgroundMode = 'draw',
+} = Astro.props;
 
 const strings = t(lang);
 const legalLinks = getLegalLinks(lang);
@@ -39,7 +50,7 @@ const legalLinks = getLegalLinks(lang);
     >
       {strings.a11y.skipToContent}
     </a>
-    <NodeField intensity={background} />
+    <GlobeField intensity={background} mode={backgroundMode} />
     <!-- The field is fixed at z-0, so everything that is content sits above it
          in its own stacking context rather than relying on paint order. -->
     <div class="relative z-10">

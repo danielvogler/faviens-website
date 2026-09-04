@@ -2,15 +2,36 @@
 <!-- Open this file in a browser, select all, copy, and paste into the Gmail
      signature box. Then replace the two lines marked below with your own.
 
-     Name and role only, deliberately. The mark, the address and the company
-     lines all arrive from the org-wide append footer, which every account gets
-     without doing anything. Repeating them here would print the mark twice in
-     any email with nothing quoted under it, which is every first email. -->
+     This is the whole footer: name, role, mark and company lines. It REPLACES
+     the org-wide append footer rather than sitting under it. Running both
+     prints the company block twice in any email with nothing quoted
+     underneath, which is every first email. -->
 <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Archivo, 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;line-height:1.45;color:#0e0e10">
   <tr>
     <td style="padding:0 0 2px 0;font-weight:600">Firstname Lastname</td><!-- replace -->
   </tr>
   <tr>
-    <td style="padding:0;color:#71716e">Role</td><!-- replace -->
+    <td style="padding:0 0 14px 0;color:#71716e">Role</td><!-- replace -->
+  </tr>
+  <tr>
+    <!-- A hairline, the same rule the site sets its sections on. A border on a
+         cell rather than an <hr>, which Outlook draws with its own margins and
+         its own colour. -->
+    <td style="padding:14px 0 0 0;border-top:1px solid #e4e3de">
+      <!-- width and height as attributes as well as in the style: Outlook
+           ignores CSS dimensions on an image and will otherwise draw it at its
+           full 420px. -->
+      <a href="https://faviens.com" style="text-decoration:none"><img src="https://faviens.com/email-logo.png" width="210" height="39" alt="Faviens" style="display:block;width:210px;height:39px;border:0;outline:none;text-decoration:none"></a>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0 0 0;color:#71716e;font-size:13px">Zürich, Switzerland</td>
+  </tr>
+  <tr>
+    <td style="padding:2px 0 0 0;font-size:13px">
+      <a href="mailto:info@faviens.com" style="color:#d6000b;text-decoration:none">info@faviens.com</a>
+      <span style="color:#e4e3de">&nbsp;|&nbsp;</span>
+      <a href="https://faviens.com" style="color:#d6000b;text-decoration:none">faviens.com</a>
+    </td>
   </tr>
 </table>

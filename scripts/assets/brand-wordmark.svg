@@ -1,17 +1,35 @@
 <!--
-  The wordmark on its own, for off-site profiles: no tagline, no tile, no
-  padding. Colours are placeholders in double braces naming an rgb token in
-  src/styles/global.css, substituted by scripts/generate-brand.mjs.
+  The wordmark on its own: FAV, a red bar standing in for the I, then ENS.
+  Colours are placeholders in double braces naming an rgb token in
+  src/styles/global.css, substituted by scripts/template.mjs.
 
-  It carries no background rect, unlike og.svg and favicon.svg. The rasteriser
+  It carries no background rect, unlike favicon.svg. The rasteriser
   trims this to the ink and then pads it to whatever the destination asks for,
   and a rect would defeat the trim: there would be nothing to crop away. The
   ground is chosen per output instead, because Google Workspace sets the mark on
   its own white chrome and LinkedIn sets it on both light and dark.
 
+  Three elements, not one text run with a tspan. The bar has to sit between the
+  V and the E at a known offset, and the rasteriser has no access to Archivo, so
+  its advance widths are not known here. FAV is anchored at its END and ENS at
+  its START, both against a fixed axis, with the bar between them: the word's
+  outer edges then float with whatever face the rasteriser resolves, which the
+  trim removes anyway, while the bar's own bearings stay exact.
+
+  Numbers at font-size 200, baseline 270, from the brand package's spec and
+  Archivo's measured metrics (cap 0.68709em, I stem 0.179469em):
+
+    cap           137.42
+    bar width     0.42 x stem                    = 15.075
+    bar height    1.34 x cap x the ink ratio     = 189.62, the circle's width
+    bearings      0.9 x stem x 1.15, halved      = 18.575 each side
+    bar centre    the cap midline, y 201.29, where the circle is centred too
+
   The viewBox is generous on purpose. It only has to be large enough that no
   glyph is clipped before the trim measures the real extent.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
-  <text x="60" y="220" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-2.4" fill="{{ink}}">F<tspan fill="{{accent}}">A</tspan>V<tspan fill="{{accent}}">I</tspan>ENS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 400">
+  <text x="700" y="270" text-anchor="end" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-2.4" fill="{{ink}}">FAV</text>
+  <rect x="718.575" y="106.48" width="15.075" height="189.62" fill="{{accent}}"/>
+  <text x="752.225" y="270" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-2.4" fill="{{ink}}">ENS</text>
 </svg>

@@ -1,0 +1,20 @@
+<!--
+  The line that sits under the lockup wherever there is room for it: the link
+  preview and the LinkedIn banners. Colours are placeholders in double braces
+  naming an rgb token in src/styles/global.css, substituted by
+  scripts/template.mjs.
+
+  It is its own file because those images are composed, not laid out: the lockup
+  is built from measured parts by scripts/lockup.mjs and this is placed against
+  the wordmark's real left edge, which the compositor reports. Written as one
+  SVG with the lockup, this line would have to be positioned against a text
+  width the rasteriser has not resolved yet, which is how it previously ended up
+  aligned to neither the wordmark nor the whole logo.
+
+  Anchored at the start and then trimmed to its ink, so its left edge is 0 and
+  the composition can place it exactly. The viewBox only has to be large enough
+  that nothing is clipped before the trim measures the real extent.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 80">
+  <text x="10" y="50" xml:space="preserve" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="500" letter-spacing="6.4" fill="{{grey}}">AGENTIC-AI CONSULTING <tspan fill="{{accent}}">·</tspan> ZÜRICH</text>
+</svg>

@@ -1,39 +1,93 @@
 /**
- * Build-time image generation. Resolves the palette into the SVG sources in
- * `scripts/assets/`, writes them to `public/`, and rasterises them into the PNG
- * variants referenced by BaseHead.astro, so no binaries live in git.
+ * Build-time image generation. Resolves the palette and the generated mark into
+ * the SVG sources in `scripts/assets/`, writes the ones a browser fetches to
+ * `public/`, and rasterises the rest into the PNGs BaseHead.astro references,
+ * so no binaries live in git.
+ *
+ * The link preview and the hosted email logo are composed rather than laid out.
+ * See scripts/lockup.mjs for why: the rasteriser has no access to Archivo, so
+ * anything positioned against a text width is positioned against a number
+ * nobody knows at authoring time.
  *
  * Runs via `prebuild` and `predev`. It runs before dev as well as before build
- * because `public/favicon.svg` is served to the browser directly, so a stale or
- * missing one is visible in development and not just in a deploy.
+ * because the browser fetches what it writes, so a stale or missing icon is
+ * visible in development and not just in a deploy.
  *
- * The generated SVGs stay tracked. They are what a fresh clone serves before
- * anything has been built, and keeping them in git means a palette change shows
- * up as a reviewable diff rather than as an invisible build artefact.
+ * The generated mark SVGs stay tracked. They are what a fresh clone serves
+ * before anything has been built, and keeping them in git means a palette or
+ * geometry change shows up as a reviewable diff rather than as an invisible
+ * build artefact. The rasters are gitignored: the repository keeps no binaries.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
 import { paletteFrom } from './tokens.mjs';
-import { renderTight, resolveSource as resolveTight } from './tight-render.mjs';
+import { resolveTemplate, resolveSource as resolveAsset } from './template.mjs';
+import { fitInto, hexToRgb } from './tight-render.mjs';
+import { horizontalLockup, lockupBlock } from './lockup.mjs';
+import { globeGroup, markSvg } from '../src/lib/globe.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(__dirname, '..', 'public');
 const sourceDir = join(__dirname, 'assets');
 const stylesheet = join(__dirname, '..', 'src', 'styles', 'global.css');
 
-const OG_SIZE = { width: 1200, height: 630 };
 /*
- * 16px gets its own artwork. Three letters at that size are five pixels each,
- * which no typeface survives, so the smallest icon is a single letter and
- * everything above it is the three-letter mark.
+ * The link preview, composed rather than laid out.
+ *
+ * `lockupHeight` is the lockup's ink height, which is the bar's height and so
+ * also the circle's diameter. Everything else is measured from it, and the
+ * block of lockup plus descriptor is centred on the canvas.
+ *
+ * The descriptor's left edge aligns with the WORDMARK's, not with the circle's.
+ * The circle is the logo's own hanging indent; a line of type starting under it
+ * would read as a second, wider column.
+ */
+const OG = {
+  width: 1200,
+  height: 630,
+  left: 90,
+  lockupHeight: 190,
+  /** Lockup ink bottom to the descriptor's cap top. */
+  gap: 44,
+};
+
+/** The hosted wordmark's canvas. See EMAIL_LOGO below for why it exists. */
+const EMAIL_LOGO_SIZE = { width: 420, height: 78 };
+/*
+ * Every icon is the real mark, all sixty strands. Only the stroke weight
+ * changes: `small` inks it up for the tab sizes, where the logo's own hairline
+ * is a third of a pixel and comes out as a pale disc, and `large` is the logo
+ * untouched, because at 180 and 512 the inked-up strokes read as a heavier
+ * drawing rather than as the same one.
+ *
+ * There is no 16px icon. Nothing legible as this mark exists at 16px, and a
+ * reduced drawing there put a different mark in the tab from the one in the
+ * header. A browser that wants 16 downsamples the 32.
  */
 const FAVICON_SIZES = [
-  { file: 'favicon-32x32.png', size: 32 },
-  { file: 'favicon-48x48.png', size: 48 },
-  { file: 'favicon-512x512.png', size: 512 },
-  { file: 'apple-touch-icon.png', size: 180 },
+  { file: 'favicon-32x32.png', size: 32, source: 'small' },
+  { file: 'favicon-48x48.png', size: 48, source: 'small' },
+  { file: 'apple-touch-icon.png', size: 180, source: 'large' },
+  { file: 'favicon-512x512.png', size: 512, source: 'large' },
+];
+
+/*
+ * The mark as its own file, one per size band, referenced by the components
+ * rather than inlined into them.
+ *
+ * Inline would put 79 KB of coordinates into every page for the hero alone, and
+ * again for the header, and again for every bullet, none of which the browser
+ * could then cache or share. As files they are one request each, cached across
+ * the whole site, and the markup stays an `img` tag.
+ *
+ * Transparent, because the ground is the page's, and tight, because the layout
+ * supplies its own whitespace. See VARIANTS in src/lib/globe.mjs for the bands.
+ */
+const MARKS = [
+  { file: 'mark.svg', variant: 'full' },
+  { file: 'mark-dot.svg', variant: 'dot' },
 ];
 
 /*
@@ -43,11 +97,11 @@ const FAVICON_SIZES = [
  * itself. It ships in public/ for that one reason and the pages do not use it.
  *
  * Transparent, so it sits on whatever ground the mail client paints. Sized at
- * twice the roughly 180px a footer shows, so it stays sharp on a retina screen.
- * The canvas matches the mark's own proportion, so there is no dead space
+ * twice the roughly 210px a footer shows, so it stays sharp on a retina screen.
+ * The canvas matches the lockup's own proportion, so there is no dead space
  * around it to read as a misaligned box next to the footer text.
  */
-const EMAIL_LOGO = { file: 'email-logo.png', width: 360, height: 66 };
+const EMAIL_LOGO = { file: 'email-logo.png' };
 
 const BANNER = (source) =>
   `<!-- GENERATED by scripts/generate-og.mjs. Edit scripts/assets/${source}, not this file. -->\n`;
@@ -55,26 +109,15 @@ const BANNER = (source) =>
 const palette = paletteFrom(await readFile(stylesheet, 'utf8'));
 
 /**
- * Substitutes `{{token}}` for the palette value of that token. An unknown token
- * throws rather than being left in the output: a `{{accent}}` that silently
- * survives into a rasterised PNG is a black rectangle nobody notices until the
- * link preview is already out in the world.
+ * Resolves a template and writes it to `public/`.
+ *
+ * Only the sources a browser actually requests are published. The 16px artwork
+ * and the descriptor strip are inputs to the rasteriser and nothing else, so
+ * publishing them would ship files no one fetches.
  */
 async function resolveSource(file, { publish = true } = {}) {
   const template = await readFile(join(sourceDir, file), 'utf8');
-  const resolved = template.replace(/\{\{([a-z0-9-]+)\}\}/g, (_, token) => {
-    const value = palette[token];
-    if (!value) {
-      throw new Error(
-        `${file} references {{${token}}}, which is not a --rgb-* token in src/styles/global.css. ` +
-          `Known tokens: ${Object.keys(palette).join(', ')}`,
-      );
-    }
-    return value;
-  });
-  // Only the sources a browser actually requests are written to public/. The
-  // 16px artwork is an input to the rasteriser and nothing else, so publishing
-  // it would ship a file no one fetches.
+  const resolved = resolveTemplate(template, palette, file);
   if (publish) {
     await writeFile(join(publicDir, file), BANNER(file) + resolved);
   }
@@ -88,21 +131,69 @@ async function render(svg, targetFile, { width, height }) {
   console.log(`${targetFile} generated (${png.byteLength} bytes)`);
 }
 
-const og = await resolveSource('og.svg');
-const favicon = await resolveSource('favicon.svg');
-const faviconSmall = await resolveSource('favicon-small.svg', { publish: false });
+const favicon = await resolveSource('favicon.svg', { publish: false });
+const descriptor = await resolveSource('descriptor.svg', { publish: false });
 
-await render(og, 'og.png', OG_SIZE);
-await render(faviconSmall, 'favicon-16x16.png', { width: 16, height: 16 });
+/*
+ * The large icons reuse the same tile and swap the variant, so there is one
+ * ground, one margin and one artwork decision rather than a second template
+ * that would have to be kept in step with the first by hand.
+ */
+const sources = {
+  small: favicon,
+  large: favicon.replace(
+    globeGroup({ variant: 'icon', colour: palette.accent }),
+    globeGroup({ variant: 'full', colour: palette.accent }),
+  ),
+};
 
-for (const { file, size } of FAVICON_SIZES) {
-  await render(favicon, file, { width: size, height: size });
+for (const { file, size, source } of FAVICON_SIZES) {
+  await render(sources[source], file, { width: size, height: size });
 }
 
-const wordmark = await resolveTight(sourceDir, 'brand-wordmark.svg', palette);
-const emailLogo = await renderTight(wordmark, {
-  width: EMAIL_LOGO.width,
-  height: EMAIL_LOGO.height,
+for (const { file, variant } of MARKS) {
+  const svg = markSvg({ variant, colour: palette.accent, title: 'Faviens' });
+  await writeFile(join(publicDir, file), BANNER('../src/lib/globe.mjs') + svg);
+  console.log(`${file} generated (${variant}, ${svg.length} bytes)`);
+}
+
+/*
+ * The lockup, built once from measured parts and used by both the link preview
+ * and the hosted email logo, so the two cannot disagree about the gap.
+ */
+const wordmark = await resolveAsset(sourceDir, 'brand-wordmark.svg', palette);
+const mark = await resolveAsset(sourceDir, 'brand-mark.svg', palette);
+const lockup = await horizontalLockup({ wordmark, mark, height: OG.lockupHeight });
+const block = await lockupBlock({
+  wordmark,
+  mark,
+  descriptor,
+  height: OG.lockupHeight,
+  gap: OG.gap,
+});
+
+const ogPng = await sharp({
+  create: {
+    width: OG.width,
+    height: OG.height,
+    channels: 4,
+    background: { ...hexToRgb(palette.paper), alpha: 1 },
+  },
+})
+  .composite([
+    {
+      input: block.data,
+      left: OG.left,
+      top: Math.round((OG.height - block.height) / 2),
+    },
+  ])
+  .png({ quality: 90 })
+  .toBuffer();
+await writeFile(join(publicDir, 'og.png'), ogPng);
+console.log(`og.png generated (${OG.width}x${OG.height}, ${ogPng.byteLength} bytes)`);
+
+const emailLogo = await fitInto(lockup.data, {
+  ...EMAIL_LOGO_SIZE,
   ground: null,
   margin: 0,
 });

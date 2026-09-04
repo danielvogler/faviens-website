@@ -1,0 +1,317 @@
+---
+/*
+ * The mark, very large and very quiet, turning behind the page.
+ *
+ * It replaces the node field. The field was an exception granted on 2026-08-17
+ * against the ban on network decoration, and the ban's reason was that nodes
+ * and edges are the AI category's default wallpaper. The globe is not an
+ * exception to anything: it is the identity itself, at the one scale where its
+ * geometry is legible, so the background stops being decoration bolted onto the
+ * brand and becomes the brand at rest.
+ *
+ * It is the same drawing as the logo, from src/lib/globe.mjs and the same seed,
+ * which is only possible because the strands are real circles on a real sphere.
+ * A flattened SVG has no depth left to turn. That is also why this is canvas and
+ * not CSS: rotating an image of a sphere is a spinning picture, and the eye
+ * reads it as a picture immediately. Recomputing the projection is what makes
+ * the strands cross differently at every angle, which is what a turning sphere
+ * actually does.
+ *
+ * Two modes, because they answer different questions:
+ *   `rotate`  the sphere is already there and turning.
+ *   `draw`    the strands are laid down one after another as it turns, then it
+ *             keeps turning. The mark builds itself once per visit.
+ *
+ * Guardrails, all inherited from the field it replaces and all still required:
+ *   - prefers-reduced-motion draws one static frame and never starts the loop.
+ *     In `draw` that frame is the finished globe, not an empty one.
+ *   - The loop stops when the tab is hidden and when the canvas is off screen.
+ *   - Device pixel ratio is capped at 2.
+ *   - Strands are batched into three paths by depth, so a frame is three
+ *     strokes rather than one per segment.
+ *   - Colour comes from --globe-* in global.css. No colour is written here.
+ *   - aria-hidden and pointer-events: none. It is decoration and must never be
+ *     reachable, focusable or announced.
+ */
+interface Props {
+  /**
+   * `quiet` is the site setting. `active` turns faster and sits a little
+   * stronger, for a screen with no content on it. `off` renders the element and
+   * draws nothing, so the setting can be switched at runtime without a reload.
+   */
+  intensity?: 'off' | 'quiet' | 'active';
+  /** `draw` lays the strands down once on arrival, then behaves as `rotate`. */
+  mode?: 'rotate' | 'draw';
+  class?: string;
+}
+
+const { intensity = 'quiet', mode = 'draw', class: className = '' } = Astro.props;
+---
+
+<canvas
+  class:list={['globe-field', className]}
+  data-globe-field
+  data-intensity={intensity}
+  data-mode={mode}
+  aria-hidden="true"></canvas>
+
+<style>
+  .globe-field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /*
+     * The sphere is drawn full strength and then held back over the band the
+     * lockup and the lead sit in. The strands are sparsest at the centre and
+     * densest at the silhouette, which is the right way round for reading, but
+     * the copy still sits on a dozen crossings without this.
+     *
+     * Held back, not cut: at 0 the ellipse reads as a hole punched in the
+     * sphere, which is worse than the crossings were.
+     */
+    --globe-hold: 0.45;
+    -webkit-mask-image: radial-gradient(
+      ellipse 62% 48% at 50% 52%,
+      rgba(0, 0, 0, var(--globe-hold)),
+      rgba(0, 0, 0, 1) 82%
+    );
+    mask-image: radial-gradient(
+      ellipse 62% 48% at 50% 52%,
+      rgba(0, 0, 0, var(--globe-hold)),
+      rgba(0, 0, 0, 1) 82%
+    );
+  }
+</style>
+
+<script>
+  import { buildStrands, projectStrands, CX, CY, BOX, STROKE } from '~/lib/globe.mjs';
+
+  interface FieldSettings {
+    /** Seconds for one full revolution. */
+    readonly period: number;
+    /** Diameter as a fraction of the viewport's shorter side. */
+    readonly scale: number;
+    /** Opacity of the front layer. The other two are derived from it. */
+    readonly alpha: number;
+    /** Seconds to lay down all the strands, in `draw` mode. */
+    readonly drawSeconds: number;
+  }
+
+  const SETTINGS: Record<'quiet' | 'active', FieldSettings> = {
+    quiet: { period: 150, scale: 1.02, alpha: 0.13, drawSeconds: 7 },
+    active: { period: 90, scale: 1.12, alpha: 0.2, drawSeconds: 5 },
+  };
+
+  /**
+   * Samples per strand. The static artwork uses 110; the field is redrawn sixty
+   * times a second and a chord that is a fortieth of a pixel off the true arc
+   * is not worth paying for on every one of them.
+   */
+  const STEPS = 90;
+  const MAX_DPR = 2;
+  /** A tab resumed after an hour must not jump a quarter turn in one frame. */
+  const MAX_FRAME_SECONDS = 1 / 20;
+  /** Depth alphas, as fractions of the front layer's. Compressed against the
+   *  logo's 0.38 / 0.95 / 1.00: at this opacity the back layer would otherwise
+   *  fall below what a display can resolve and the sphere would lose its far
+   *  side entirely. */
+  const DEPTH_ALPHA = [0.45, 0.8, 1];
+  /** Stroke widths in CSS pixels, not scaled with the globe. The mark is a
+   *  hairline drawing and the site is a hairline layout; a stroke that grew
+   *  with the sphere would turn it into a solid ball on a large display. */
+  const DEPTH_WIDTH = STROKE.map((w) => w / STROKE[2]);
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const startField = (canvas: HTMLCanvasElement) => {
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    const strands = buildStrands({ steps: STEPS });
+
+    let settings = SETTINGS.quiet;
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+    let lastTime = 0;
+    let angle = 0;
+    /** 0 to 1 in `draw` mode, pinned at 1 in `rotate`. */
+    let revealed = 1;
+    let onScreen = true;
+
+    const isOff = () => canvas.dataset.intensity === 'off';
+
+    /*
+     * Read once, at start, and as triplets rather than hex so an alpha can be
+     * composed onto them per depth and per frame.
+     *
+     * There is no fallback colour on purpose. A fallback would be the one place
+     * in the repository where a palette value is written twice, and it would go
+     * stale the first time the palette changed. The only way these come back
+     * empty is a stylesheet that did not load, in which case the page has no
+     * design to decorate and the field should stay off.
+     */
+    const styles = getComputedStyle(canvas);
+    const colour = (name: string) => {
+      const parts = styles
+        .getPropertyValue(name)
+        .trim()
+        .split(/[\s,]+/)
+        .filter(Boolean);
+      return parts.length === 3 ? parts.join(', ') : null;
+    };
+    const DEPTH_COLOUR = [colour('--globe-back'), colour('--globe-mid'), colour('--globe-front')];
+    if (DEPTH_COLOUR.some((value) => !value)) return;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const applySettings = () => {
+      settings = canvas.dataset.intensity === 'active' ? SETTINGS.active : SETTINGS.quiet;
+    };
+
+    /**
+     * How many samples of a given strand to draw.
+     *
+     * The reveal is a single moving front across the whole set: strands before
+     * it are complete, the one at it is partial, and the rest are not there
+     * yet. Drawing them all at a rising opacity instead would fade a finished
+     * sphere in, which is a different and much duller idea.
+     */
+    const limitFor = (index: number, count: number, samples: number) => {
+      const front = revealed * count;
+      if (index + 1 <= front) return samples;
+      if (index >= front) return 0;
+      return Math.max(2, Math.round((front - index) * samples));
+    };
+
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      if (isOff()) return;
+
+      // The projection is in the mark's own 200-unit box, so the canvas is put
+      // into those units once and every coordinate below is the mark's.
+      const size = Math.min(width, height) * settings.scale;
+      const scale = size / BOX;
+      const originX = width / 2 - CX * scale;
+      const originY = height / 2 - CY * scale;
+
+      const paths = [new Path2D(), new Path2D(), new Path2D()];
+
+      for (let index = 0; index < strands.length; index += 1) {
+        const samples = strands[index]!.length;
+        const limit = limitFor(index, strands.length, samples);
+        if (limit === 0) continue;
+        // One strand at a time, so a partial one can be cut mid-loop. The
+        // module's own splitter takes the whole set and has nothing to cut with.
+        const buckets = projectStrands([strands[index]!.slice(0, limit)], angle);
+        for (let depth = 0; depth < 3; depth += 1) {
+          for (const run of buckets[depth]!) {
+            paths[depth]!.moveTo(originX + run[0]![0] * scale, originY + run[0]![1] * scale);
+            for (let i = 1; i < run.length; i += 1) {
+              paths[depth]!.lineTo(originX + run[i]![0] * scale, originY + run[i]![1] * scale);
+            }
+          }
+        }
+      }
+
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      for (let depth = 0; depth < 3; depth += 1) {
+        context.strokeStyle = `rgba(${DEPTH_COLOUR[depth]}, ${(
+          settings.alpha * DEPTH_ALPHA[depth]!
+        ).toFixed(3)})`;
+        context.lineWidth = DEPTH_WIDTH[depth]!;
+        context.stroke(paths[depth]!);
+      }
+    };
+
+    const step = (seconds: number) => {
+      angle += (seconds / settings.period) * Math.PI * 2;
+      if (revealed < 1) revealed = Math.min(1, revealed + seconds / settings.drawSeconds);
+    };
+
+    const tick = (time: number) => {
+      frame = 0;
+      const seconds = Math.min((time - lastTime) / 1000, MAX_FRAME_SECONDS);
+      lastTime = time;
+      step(seconds);
+      draw();
+      schedule();
+    };
+
+    const schedule = () => {
+      if (frame || document.hidden || !onScreen || isOff() || reduceMotion.matches) return;
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const stop = () => {
+      if (!frame) return;
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const restart = () => {
+      lastTime = performance.now();
+      schedule();
+    };
+
+    // The reveal is skipped entirely under reduced motion rather than run at
+    // speed: the point of `draw` is the motion, and without it the correct
+    // still frame is the finished sphere.
+    if (canvas.dataset.mode === 'draw' && !reduceMotion.matches) revealed = 0;
+
+    resize();
+    applySettings();
+    draw();
+    restart();
+
+    new MutationObserver(() => {
+      applySettings();
+      draw();
+      restart();
+    }).observe(canvas, { attributeFilter: ['data-intensity'] });
+
+    let resizeFrame = 0;
+    window.addEventListener(
+      'resize',
+      () => {
+        window.cancelAnimationFrame(resizeFrame);
+        resizeFrame = window.requestAnimationFrame(() => {
+          resize();
+          draw();
+        });
+      },
+      { passive: true },
+    );
+
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : restart()));
+
+    new IntersectionObserver((entries) => {
+      onScreen = entries.some((entry) => entry.isIntersecting);
+      if (onScreen) restart();
+      else stop();
+    }).observe(canvas);
+
+    reduceMotion.addEventListener('change', () => {
+      if (reduceMotion.matches) {
+        revealed = 1;
+        stop();
+        draw();
+      } else {
+        restart();
+      }
+    });
+  };
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-globe-field]').forEach(startField);
+</script>
