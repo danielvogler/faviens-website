@@ -3,7 +3,7 @@
 > Agentic-AI consulting in Zürich, Switzerland.
 > Live at **[faviens.com](https://faviens.com)**.
 
-[![Deploy](https://img.shields.io/github/actions/workflow/status/danielvogler/faviens-website/deploy.yml?branch=main&label=deploy&logo=github)](https://github.com/danielvogler/faviens-website/actions)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/faviens/faviens-website/deploy.yml?branch=main&label=deploy&logo=github)](https://github.com/faviens/faviens-website/actions)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Ffaviens.com&up_message=live&down_message=down&label=site)](https://faviens.com)
 [![Astro](https://img.shields.io/badge/Astro-6.3-FF5D01?logo=astro&logoColor=white)](https://astro.build)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -192,7 +192,7 @@ The `smoke` job stays red until the DNS records below and the Pages custom domai
 | ----- | ----- | ------------------------------------------------------------------------------------------ |
 | A     | `@`   | `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`                 |
 | AAAA  | `@`   | `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153` |
-| CNAME | `www` | `danielvogler.github.io`                                                                   |
+| CNAME | `www` | `faviens.github.io`                                                                        |
 
 `faviens.ch` and `faviens.de` are 301-forwarded to `https://faviens.com` via GoDaddy domain forwarding (no masking). GitHub Pages supports only one custom domain per repository.
 
