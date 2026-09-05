@@ -522,10 +522,17 @@ the clients that block remote images by default, which is most corporate ones.
 Only the mark is an image, because it cannot be anything else, and it carries an
 alt of the name so a blocked image degrades to the word.
 
-Neither carries a real name. `public/email-logo.png` is the hosted lockup, the
-circle and the wordmark, at 420x78 and transparent. The signature references it
-at half size so it stays sharp on a retina screen, and the append footer's image
-control can take the same URL, which is all that control accepts.
+It sits on the site's `paper` ground rather than on the client's, so a dark
+client cannot render the ink wordmark and the type beside it near-black on
+near-black. The block and the logo have to carry the same ground, hence
+`email-logo-paper.png`.
+
+Neither carries a real name. `public/email-logo.png` and
+`public/email-logo-paper.png` are the hosted lockup, the circle and the
+wordmark, at 420x78, transparent and on the paper ground. The signature
+references the paper one at half size so it stays sharp on a retina screen; the
+append footer's image control takes the transparent one, which has no ground of
+ours to match and accepts nothing but a URL.
 
 The origin in both is read from `astro.config.mjs`, not written out again. That
 file already applies the `SITE_URL` fallback, and a second copy is a second
